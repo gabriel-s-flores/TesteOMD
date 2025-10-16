@@ -5,9 +5,11 @@ import reactRefresh from "eslint-plugin-react-refresh";
 import { defineConfig, globalIgnores } from "eslint/config";
 import globals from "globals";
 import tseslint from "typescript-eslint";
+import pluginRouter from '@tanstack/eslint-plugin-router'
 
 export default defineConfig([
   globalIgnores(["dist"]),
+  ...pluginRouter.configs['flat/recommended'],
   {
     files: ["**/*.{ts,tsx}"],
     extends: [

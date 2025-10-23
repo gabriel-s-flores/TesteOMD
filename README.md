@@ -1,73 +1,64 @@
-# React + TypeScript + Vite
+# Sistema de Gerenciamento de Planos de Ação
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+## Descrição
 
-Currently, two official plugins are available:
+Desenvolvi um sistema frontend completo para gerenciamento de planos de ação utilizando React e TypeScript. A aplicação permite criar, visualizar, editar e excluir planos de ação, além de gerenciar as ações individuais de cada plano com transição automática de status.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Tecnologias e Justificativas
 
-## React Compiler
+Escolhi React como framework principal pela sua maturidade e ecossistema robusto. Optei por TypeScript para garantir type safety e melhor manutenibilidade do código.
 
-The React Compiler is currently not compatible with SWC. See [this issue](https://github.com/vitejs/vite-plugin-react/issues/428) for tracking the progress.
+Utilizei @tanstack/react-router para roteamento devido à sua abordagem type-safe e performance superior com lazy loading nativo. Para gerenciamento de estado, implementei @tanstack/react-query que oferece cache inteligente e tratamento automático de estados de loading e erro.
 
-## Expanding the ESLint configuration
+Para estilização, selecionei Tailwind CSS pela abordagem utility-first que permite desenvolvimento rápido e consistente. Adotei React Hook Form para formulários pela sua performance superior com renderizações mínimas.
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+Como build tool, escolhi Vite pelo desenvolvimento rápido com HMR instantâneo e excelente performance de build.
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+Utilizei Bun como gerenciador de pacotes principal devido à sua velocidade superior e compatibilidade com o ecossistema npm.
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+## Arquitetura
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+Estruturei o projeto seguindo princípios de Atomic Design para criar uma hierarquia clara de componentes:
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+- Componentes UI base (Button, Input, Card, Modal)
+- Componentes de formulário reutilizáveis
+- Componentes de layout complexos
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+Implementei uma arquitetura baseada em hooks customizados para gerenciamento de estado, separando claramente as responsabilidades entre UI, lógica de negócio e comunicação com API.
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+Para performance, utilizei React.memo em componentes puros e implementei lazy loading para componentes pesados. Desenvolvi um sistema de cache com atualizações otimistas para melhor experiência do usuário.
+
+## Funcionalidades
+Implementei a gestão completa de planos de ação com:
+
++ Criação, edição e exclusão de planos
+
++ Adição e gestão de ações individuais
+
++ Transição de status das ações
+
++ Cálculo automático do status do plano baseado nas ações
+
++ Validação de formulários
+
++ Interface responsiva e moderna
+
++ Feedback visual para todas as operações
+
++ Tratamento de erros
+
+## Decisões de Design
+
+Criei um sistema de design consistente com cores semânticas e tipografia hierárquica. Implementei padrões de interação como modais contextuais e edição inline para melhor experiência do usuário.
+
+Para tratamento de datas, desenvolvi um sistema baseado em timestamps para evitar problemas de fuso horário e garantir consistência nos dados.
+
+As decisões técnicas foram tomadas visando escalabilidade, performance e manutenibilidade do código. Priorizei a criação de componentes reutilizáveis e uma arquitetura que facilite futuras expansões.
+
+## Como Executar
+
+Para executar o projeto:
+
+```bash
+bun install
+bun run dev

@@ -77,12 +77,11 @@ export const ActionsManager: React.FC<ActionsManagerProps> = ({
   ) => {
     setUpdatingActions((prev) => ({ ...prev, [actionId]: true }));
     try {
-      // Buscar a ação atual para preservar o deadline
       const currentAction = plan.actions.find((a) => a.id === actionId);
       if (currentAction) {
         await onUpdateAction(actionId, {
           status: newStatus,
-          deadline: currentAction.deadline, // Manter o deadline atual
+          deadline: currentAction.deadline,
         });
       }
     } catch (error) {
@@ -101,13 +100,10 @@ export const ActionsManager: React.FC<ActionsManagerProps> = ({
 
   const handleDeadlineBlur = async (actionId: string) => {
     const tempDeadline = tempDeadlines[actionId];
-
     if (!tempDeadline) return;
 
-    // Verificar se a data realmente mudou
     const action = plan.actions.find((a) => a.id === actionId);
     if (action && tempDeadline === timestampToDatetimeLocal(action.deadline)) {
-      // Limpar o valor temporário se não houve mudança
       setTempDeadlines((prev) => {
         const newState = { ...prev };
         delete newState[actionId];
@@ -124,7 +120,6 @@ export const ActionsManager: React.FC<ActionsManagerProps> = ({
       console.error("Erro ao atualizar prazo:", error);
     } finally {
       setUpdatingActions((prev) => ({ ...prev, [actionId]: false }));
-      // Limpar o valor temporário após salvar
       setTempDeadlines((prev) => {
         const newState = { ...prev };
         delete newState[actionId];
@@ -133,17 +128,50 @@ export const ActionsManager: React.FC<ActionsManagerProps> = ({
     }
   };
 
-  const handleDeadlineKeyPress = (_actionId: string, e: React.KeyboardEvent) => {
-    if (e.key === "Enter") {
-      (e.target as HTMLInputElement).blur();
+  // Drag and Drop handlers
+  const handleDragStart = (e: React.DragEvent, actionId: string) => {
+    e.dataTransfer.setData("actionId", actionId);
+    e.currentTarget.classList.add("opacity-50");
+  };
+
+  const handleDragEnd = (e: React.DragEvent) => {
+    e.currentTarget.classList.remove("opacity-50");
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.currentTarget.classList.add("bg-blue-50");
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.currentTarget.classList.remove("bg-blue-50");
+  };
+
+  const handleDrop = async (e: React.DragEvent, newStatus: Action["status"]) => {
+    e.preventDefault();
+    e.currentTarget.classList.remove("bg-blue-50");
+
+    const actionId = e.dataTransfer.getData("actionId");
+    if (actionId) {
+      await handleStatusChange(actionId, newStatus);
     }
   };
 
-  const statusOrder = { "A Fazer": 1, Fazendo: 2, Feita: 3 };
-  const sortedActions = useMemo(() => {
-    return [...plan.actions].sort(
-      (a, b) => statusOrder[a.status] - statusOrder[b.status],
-    );
+  // Agrupar ações por status
+  const actionsByStatus = useMemo(() => {
+    const grouped = {
+      "A Fazer": [] as Action[],
+      "Fazendo": [] as Action[],
+      "Feita": [] as Action[],
+    };
+
+    plan.actions.forEach((action) => {
+      if (grouped[action.status]) {
+        grouped[action.status].push(action);
+      }
+    });
+
+    return grouped;
   }, [plan.actions]);
 
   const getStatusVariant = (status: Action["status"]) => {
@@ -156,6 +184,19 @@ export const ActionsManager: React.FC<ActionsManagerProps> = ({
         return "bg-green-100 text-green-800";
       default:
         return "bg-gray-100 text-gray-800";
+    }
+  };
+
+  const getColumnStyle = (status: Action["status"]) => {
+    switch (status) {
+      case "A Fazer":
+        return "border-gray-300";
+      case "Fazendo":
+        return "border-yellow-300";
+      case "Feita":
+        return "border-green-300";
+      default:
+        return "border-gray-300";
     }
   };
 
@@ -231,74 +272,84 @@ export const ActionsManager: React.FC<ActionsManagerProps> = ({
         </CardContent>
       </Card>
 
-      {/* Lista de Ações */}
+      {/* Board Kanban */}
       <Card>
         <CardHeader>
           <h3 className="text-lg font-semibold">
-            Ações do Plano ({plan.actions.length})
+            Board de Ações ({plan.actions.length})
           </h3>
         </CardHeader>
         <CardContent>
-          {sortedActions.length === 0 ? (
+          {plan.actions.length === 0 ? (
             <p className="text-gray-500 text-center py-4">
               Nenhuma ação cadastrada para este plano.
             </p>
           ) : (
-            <div className="space-y-3">
-              {sortedActions.map((action) => (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {(["A Fazer", "Fazendo", "Feita"] as Action["status"][]).map((status) => (
                 <div
-                  key={action.id}
-                  className="flex items-center justify-between p-4 border border-gray-200 rounded-lg"
+                  key={status}
+                  className={`border-2 border-dashed rounded-lg p-4 min-h-[200px] ${getColumnStyle(status)}`}
+                  onDragOver={handleDragOver}
+                  onDragLeave={handleDragLeave}
+                  onDrop={(e) => handleDrop(e, status)}
                 >
-                  <div className="flex-1">
-                    <p className="font-medium">{action.description}</p>
-                    <p className="text-sm text-gray-600">
-                      Prazo: {formatTimestampForDisplay(action.deadline)}
-                    </p>
+                  <div className="flex items-center justify-between mb-4">
+                    <h4 className="font-semibold text-lg">{status}</h4>
+                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusVariant(status)}`}>
+                      {actionsByStatus[status]?.length || 0}
+                    </span>
                   </div>
 
-                  <div className="flex items-center gap-4">
-                    <select
-                      value={action.status}
-                      onChange={(e) =>
-                        handleStatusChange(
-                          action.id,
-                          e.target.value as Action["status"],
-                        )
-                      }
-                      disabled={updatingActions[action.id]}
-                      className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusVariant(action.status)} border-0 focus:ring-2 focus:ring-blue-500 ${
-                        updatingActions[action.id] ? "opacity-50" : ""
-                      }`}
-                    >
-                      <option value="A Fazer">A Fazer</option>
-                      <option value="Fazendo">Fazendo</option>
-                      <option value="Feita">Feita</option>
-                    </select>
+                  <div className="space-y-3">
+                    {actionsByStatus[status]?.map((action) => (
+                      <div
+                        key={action.id}
+                        draggable
+                        onDragStart={(e) => handleDragStart(e, action.id)}
+                        onDragEnd={handleDragEnd}
+                        className="bg-white p-3 rounded-lg shadow-sm border border-gray-200 cursor-move transition-all duration-200 hover:shadow-md"
+                      >
+                        <div className="flex flex-col space-y-2">
+                          <p className="font-medium text-sm">{action.description}</p>
+                          <p className="text-xs text-gray-600">
+                            Prazo: {formatTimestampForDisplay(action.deadline)}
+                          </p>
 
-                    <div className="relative">
-                      <input
-                        type="datetime-local"
-                        value={
-                          tempDeadlines[action.id] ||
-                          timestampToDatetimeLocal(action.deadline)
-                        }
-                        onChange={(e) =>
-                          handleDeadlineChange(action.id, e.target.value)
-                        }
-                        onBlur={() => handleDeadlineBlur(action.id)}
-                        onKeyPress={(e) => handleDeadlineKeyPress(action.id, e)}
-                        disabled={updatingActions[action.id]}
-                        className={`text-sm p-1 border rounded ${
-                          updatingActions[action.id] ? "opacity-50" : ""
-                        }`}
-                      />
-                      {updatingActions[action.id] && (
-                        <div className="absolute -right-6 top-1/2 transform -translate-y-1/2">
-                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+                          <div className="flex items-center justify-between pt-2">
+                            <div className="relative">
+                              <input
+                                type="datetime-local"
+                                value={
+                                  tempDeadlines[action.id] ||
+                                  timestampToDatetimeLocal(action.deadline)
+                                }
+                                onChange={(e) =>
+                                  handleDeadlineChange(action.id, e.target.value)
+                                }
+                                onBlur={() => handleDeadlineBlur(action.id)}
+                                //onKeyPress={(e) => handleDeadlineKeyPress(action.id, e)}
+                                disabled={updatingActions[action.id]}
+                                className={`text-xs p-1 border rounded w-32 ${
+                                  updatingActions[action.id] ? "opacity-50" : ""
+                                }`}
+                              />
+                              {updatingActions[action.id] && (
+                                <div className="absolute -right-6 top-1/2 transform -translate-y-1/2">
+                                  <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-blue-600"></div>
+                                </div>
+                              )}
+                            </div>
+                          </div>
                         </div>
-                      )}
-                    </div>
+                      </div>
+                    ))}
+
+                    {(!actionsByStatus[status] || actionsByStatus[status].length === 0) && (
+                      <div className="text-center py-8 text-gray-400 border-2 border-dashed border-gray-300 rounded-lg">
+                        Arraste ações para aqui
+                      </div>
+                    )}
                   </div>
                 </div>
               ))}

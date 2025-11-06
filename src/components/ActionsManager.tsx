@@ -56,6 +56,9 @@ export const ActionsManager: React.FC<ActionsManagerProps> = ({
   >({});
   const [isActionModalOpen, setIsActionModalOpen] = useState(false);
   const [editingAction, setEditingAction] = useState<Action | null>(null);
+  const [dragOverStatus, setDragOverStatus] = useState<Action["status"] | null>(
+    null,
+  );
 
   // Add optimistic state for instant updates
   const [optimisticActions, setOptimisticActions] = useState<Action[]>(
@@ -190,20 +193,19 @@ export const ActionsManager: React.FC<ActionsManagerProps> = ({
 
   const handleDragEnd = (e: React.DragEvent) => {
     e.currentTarget.classList.remove("opacity-30", "scale-95");
+    setDragOverStatus(null); // Reset drag over status
   };
 
-  const handleDragOver = (e: React.DragEvent) => {
+  const handleDragOver = (e: React.DragEvent, status: Action["status"]) => {
     e.preventDefault();
     e.dataTransfer.dropEffect = "move";
-    if (e.dataTransfer.types.includes("text/plain")) {
-      e.currentTarget.classList.add("bg-blue-50", "border-blue-300");
-    }
+    setDragOverStatus(status);
   };
 
   const handleDragLeave = (e: React.DragEvent) => {
     const relatedTarget = e.relatedTarget as Node;
     if (!e.currentTarget.contains(relatedTarget)) {
-      e.currentTarget.classList.remove("bg-blue-50", "border-blue-300");
+      setDragOverStatus(null);
     }
   };
 
@@ -212,7 +214,7 @@ export const ActionsManager: React.FC<ActionsManagerProps> = ({
     newStatus: Action["status"],
   ) => {
     e.preventDefault();
-    e.currentTarget.classList.remove("bg-blue-50", "border-blue-300");
+    setDragOverStatus(null);
 
     const actionId = e.dataTransfer.getData("text/plain");
     if (actionId) {
@@ -250,15 +252,33 @@ export const ActionsManager: React.FC<ActionsManagerProps> = ({
   };
 
   const getColumnStyle = (status: Action["status"]) => {
+    const baseStyle =
+      "border-2 border-dashed rounded-lg p-4 min-h-[200px] transition-all duration-200";
+
+    // If this column is the drag over target, use stronger colors
+    if (dragOverStatus === status) {
+      switch (status) {
+        case "A Fazer":
+          return `${baseStyle} border-gray-400 bg-gray-100 shadow-lg`;
+        case "Fazendo":
+          return `${baseStyle} border-yellow-400 bg-yellow-100 shadow-lg`;
+        case "Feita":
+          return `${baseStyle} border-green-400 bg-green-100 shadow-lg`;
+        default:
+          return `${baseStyle} border-gray-400 bg-gray-100 shadow-lg`;
+      }
+    }
+
+    // Normal state
     switch (status) {
       case "A Fazer":
-        return "border-gray-300 bg-gray-50/50";
+        return `${baseStyle} border-gray-300 bg-gray-50/50`;
       case "Fazendo":
-        return "border-yellow-300 bg-yellow-50/50";
+        return `${baseStyle} border-yellow-300 bg-yellow-50/50`;
       case "Feita":
-        return "border-green-300 bg-green-50/50";
+        return `${baseStyle} border-green-300 bg-green-50/50`;
       default:
-        return "border-gray-300 bg-gray-50/50";
+        return `${baseStyle} border-gray-300 bg-gray-50/50`;
     }
   };
 
@@ -382,8 +402,8 @@ export const ActionsManager: React.FC<ActionsManagerProps> = ({
                 (status) => (
                   <div
                     key={status}
-                    className={`border-2 border-dashed rounded-lg p-4 min-h-[200px] transition-colors duration-200 ${getColumnStyle(status)}`}
-                    onDragOver={handleDragOver}
+                    className={getColumnStyle(status)}
+                    onDragOver={(e) => handleDragOver(e, status)}
                     onDragLeave={handleDragLeave}
                     onDrop={(e) => handleDrop(e, status)}
                   >
@@ -439,8 +459,16 @@ export const ActionsManager: React.FC<ActionsManagerProps> = ({
 
                       {(!actionsByStatus[status] ||
                         actionsByStatus[status].length === 0) && (
-                        <div className="text-center py-8 text-gray-400 border-2 border-dashed border-gray-300 rounded-lg transition-colors duration-200">
-                          Arraste ações para aqui
+                        <div
+                          className={`text-center py-8 text-gray-500 border-2 border-dashed rounded-lg transition-colors duration-200 ${
+                            dragOverStatus === status
+                              ? "border-gray-400 bg-gray-100"
+                              : "border-gray-300"
+                          }`}
+                        >
+                          {dragOverStatus === status
+                            ? "Solte aqui!"
+                            : "Arraste ações para aqui"}
                         </div>
                       )}
                     </div>

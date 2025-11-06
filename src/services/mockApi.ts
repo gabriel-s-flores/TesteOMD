@@ -151,4 +151,35 @@ export const mockApi = {
       ),
     };
   },
+
+  async updateActionDescriptionAndDeadline(
+    planId: string,
+    actionId: string,
+    updates: { description: string; deadline: number },
+  ): Promise<Action> {
+    await delay(500);
+    const planIndex = actionPlans.findIndex((p) => p.id === planId);
+    if (planIndex === -1) throw new Error("Plano não encontrado");
+
+    const actionIndex = actionPlans[planIndex].actions.findIndex(
+      (a) => a.id === actionId,
+    );
+    if (actionIndex === -1) throw new Error("Ação não encontrada");
+
+    // Atualiza a descrição e o prazo
+    const updatedActions = [...actionPlans[planIndex].actions];
+    updatedActions[actionIndex] = {
+      ...updatedActions[actionIndex],
+      description: updates.description,
+      deadline: updates.deadline,
+    };
+
+    // Atualiza o plano completo
+    actionPlans[planIndex] = {
+      ...actionPlans[planIndex],
+      actions: updatedActions,
+    };
+
+    return { ...updatedActions[actionIndex] };
+  },
 };

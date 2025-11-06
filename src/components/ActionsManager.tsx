@@ -9,6 +9,7 @@ import {
 } from "../utils/dateUtils";
 import { Button } from "./ui/Button";
 import { Card, CardContent, CardHeader } from "./ui/Card";
+import { Modal } from "./ui/Modal";
 
 interface ActionsManagerProps {
   plan: ActionPlan;
@@ -17,8 +18,11 @@ interface ActionsManagerProps {
     actionId: string,
     updates: { status?: Action["status"]; deadline?: number },
   ) => Promise<Action | void>;
-  onEditAction: (actionId: string, description: string) => Promise<void>; // Nova prop
-  onDeleteAction: (actionId: string) => Promise<void>; // Nova prop
+  onEditAction: (
+    actionId: string,
+    updates: { description: string; deadline: number },
+  ) => Promise<void>;
+  onDeleteAction: (actionId: string) => Promise<void>;
   isLoading?: boolean;
 }
 
@@ -50,11 +54,8 @@ export const ActionsManager: React.FC<ActionsManagerProps> = ({
   const [updatingActions, setUpdatingActions] = useState<
     Record<string, boolean>
   >({});
-  const [tempDeadlines, setTempDeadlines] = useState<Record<string, string>>(
-    {},
-  );
-  const [editingActionId, setEditingActionId] = useState<string | null>(null);
-  const [editDescription, setEditDescription] = useState("");
+  const [isActionModalOpen, setIsActionModalOpen] = useState(false);
+  const [editingAction, setEditingAction] = useState<Action | null>(null);
 
   // Add optimistic state for instant updates
   const [optimisticActions, setOptimisticActions] = useState<Action[]>(
@@ -82,9 +83,55 @@ export const ActionsManager: React.FC<ActionsManagerProps> = ({
         description: "",
         deadline: defaultDeadline,
       });
+      setIsActionModalOpen(false);
     } catch (error) {
       console.error("Erro ao adicionar ação:", error);
     }
+  };
+
+  const handleEditAction = async (data: ActionFormData) => {
+    if (!editingAction) return;
+
+    try {
+      const deadlineTimestamp = datetimeLocalToTimestamp(data.deadline);
+
+      await onEditAction(editingAction.id, {
+        description: data.description,
+        deadline: deadlineTimestamp,
+      });
+
+      setIsActionModalOpen(false);
+      setEditingAction(null);
+    } catch (error) {
+      console.error("Erro ao editar ação:", error);
+    }
+  };
+
+  const openAddActionModal = () => {
+    setEditingAction(null);
+    reset({
+      description: "",
+      deadline: defaultDeadline,
+    });
+    setIsActionModalOpen(true);
+  };
+
+  const openEditActionModal = (action: Action) => {
+    setEditingAction(action);
+    reset({
+      description: action.description,
+      deadline: timestampToDatetimeLocal(action.deadline),
+    });
+    setIsActionModalOpen(true);
+  };
+
+  const closeActionModal = () => {
+    setIsActionModalOpen(false);
+    setEditingAction(null);
+    reset({
+      description: "",
+      deadline: defaultDeadline,
+    });
   };
 
   const handleStatusChange = async (
@@ -116,34 +163,6 @@ export const ActionsManager: React.FC<ActionsManagerProps> = ({
     }
   };
 
-  // Função para iniciar a edição
-  const handleStartEdit = (action: Action) => {
-    setEditingActionId(action.id);
-    setEditDescription(action.description);
-  };
-
-  // Função para cancelar a edição
-  const handleCancelEdit = () => {
-    setEditingActionId(null);
-    setEditDescription("");
-  };
-
-  // Função para salvar a edição
-  const handleSaveEdit = async (actionId: string) => {
-    if (!editDescription.trim()) return;
-
-    setUpdatingActions((prev) => ({ ...prev, [actionId]: true }));
-    try {
-      await onEditAction(actionId, editDescription);
-      setEditingActionId(null);
-      setEditDescription("");
-    } catch (error) {
-      console.error("Erro ao editar ação:", error);
-    } finally {
-      setUpdatingActions((prev) => ({ ...prev, [actionId]: false }));
-    }
-  };
-
   // Função para excluir ação
   const handleDeleteAction = async (actionId: string) => {
     if (!window.confirm("Tem certeza que deseja excluir esta ação?")) {
@@ -157,43 +176,6 @@ export const ActionsManager: React.FC<ActionsManagerProps> = ({
       console.error("Erro ao excluir ação:", error);
     } finally {
       setUpdatingActions((prev) => ({ ...prev, [actionId]: false }));
-    }
-  };
-
-  const handleDeadlineChange = (actionId: string, newDeadline: string) => {
-    setTempDeadlines((prev) => ({
-      ...prev,
-      [actionId]: newDeadline,
-    }));
-  };
-
-  const handleDeadlineBlur = async (actionId: string) => {
-    const tempDeadline = tempDeadlines[actionId];
-    if (!tempDeadline) return;
-
-    const action = plan.actions.find((a) => a.id === actionId);
-    if (action && tempDeadline === timestampToDatetimeLocal(action.deadline)) {
-      setTempDeadlines((prev) => {
-        const newState = { ...prev };
-        delete newState[actionId];
-        return newState;
-      });
-      return;
-    }
-
-    setUpdatingActions((prev) => ({ ...prev, [actionId]: true }));
-    try {
-      const deadlineTimestamp = datetimeLocalToTimestamp(tempDeadline);
-      await onUpdateAction(actionId, { deadline: deadlineTimestamp });
-    } catch (error) {
-      console.error("Erro ao atualizar prazo:", error);
-    } finally {
-      setUpdatingActions((prev) => ({ ...prev, [actionId]: false }));
-      setTempDeadlines((prev) => {
-        const newState = { ...prev };
-        delete newState[actionId];
-        return newState;
-      });
     }
   };
 
@@ -283,75 +265,105 @@ export const ActionsManager: React.FC<ActionsManagerProps> = ({
 
   return (
     <div className="space-y-6">
-      {/* Formulário para adicionar ação */}
+      {/* Botão para adicionar nova ação */}
       <Card>
-        <CardHeader>
-          <h3 className="text-lg font-semibold">Adicionar Nova Ação</h3>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit(handleAddAction)} className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label
-                  htmlFor="description"
-                  className="block text-sm font-medium text-gray-700"
-                >
-                  Descrição da Ação
-                </label>
-                <input
-                  type="text"
-                  id="description"
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
-                  {...register("description", {
-                    required: "Descrição é obrigatória",
-                    minLength: { value: 3, message: "Mínimo 3 caracteres" },
-                  })}
-                />
-                {errors.description && (
-                  <p className="mt-1 text-sm text-red-600">
-                    {errors.description.message}
-                  </p>
-                )}
-              </div>
-
-              <div>
-                <label
-                  htmlFor="deadline"
-                  className="block text-sm font-medium text-gray-700"
-                >
-                  Prazo
-                </label>
-                <input
-                  type="datetime-local"
-                  id="deadline"
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
-                  {...register("deadline", {
-                    required: "Prazo é obrigatório",
-                    validate: (value) => {
-                      const selectedTimestamp = datetimeLocalToTimestamp(value);
-                      return (
-                        selectedTimestamp > Date.now() ||
-                        "Prazo deve ser futuro"
-                      );
-                    },
-                  })}
-                />
-                {errors.deadline && (
-                  <p className="mt-1 text-sm text-red-600">
-                    {errors.deadline.message}
-                  </p>
-                )}
-              </div>
+        <CardContent className="pt-6">
+          <div className="flex justify-between items-center">
+            <div>
+              <h3 className="text-lg font-semibold">Ações do Plano</h3>
+              <p className="text-gray-600 text-sm">
+                Total de {optimisticActions.length} ações
+              </p>
             </div>
-
-            <div className="flex justify-end">
-              <Button type="submit" variant="primary" isLoading={isSubmitting}>
-                Adicionar Ação
-              </Button>
-            </div>
-          </form>
+            <Button variant="primary" onClick={openAddActionModal}>
+              Adicionar Nova Ação
+            </Button>
+          </div>
         </CardContent>
       </Card>
+
+      {/* Modal para adicionar/editar ação */}
+      <Modal
+        isOpen={isActionModalOpen}
+        onClose={closeActionModal}
+        title={editingAction ? "Editar Ação" : "Adicionar Nova Ação"}
+        size="md"
+      >
+        <form
+          onSubmit={
+            editingAction
+              ? handleSubmit(handleEditAction)
+              : handleSubmit(handleAddAction)
+          }
+          className="space-y-4"
+        >
+          <div className="grid grid-cols-1 gap-4">
+            <div>
+              <label
+                htmlFor="description"
+                className="block text-sm font-medium text-gray-700"
+              >
+                Descrição da Ação
+              </label>
+              <input
+                type="text"
+                id="description"
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
+                {...register("description", {
+                  required: "Descrição é obrigatória",
+                  minLength: { value: 3, message: "Mínimo 3 caracteres" },
+                })}
+              />
+              {errors.description && (
+                <p className="mt-1 text-sm text-red-600">
+                  {errors.description.message}
+                </p>
+              )}
+            </div>
+
+            <div>
+              <label
+                htmlFor="deadline"
+                className="block text-sm font-medium text-gray-700"
+              >
+                Prazo
+              </label>
+              <input
+                type="datetime-local"
+                id="deadline"
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
+                {...register("deadline", {
+                  required: "Prazo é obrigatório",
+                  validate: (value) => {
+                    const selectedTimestamp = datetimeLocalToTimestamp(value);
+                    return (
+                      selectedTimestamp > Date.now() || "Prazo deve ser futuro"
+                    );
+                  },
+                })}
+              />
+              {errors.deadline && (
+                <p className="mt-1 text-sm text-red-600">
+                  {errors.deadline.message}
+                </p>
+              )}
+            </div>
+          </div>
+
+          <div className="flex justify-end space-x-3 pt-4">
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={closeActionModal}
+            >
+              Cancelar
+            </Button>
+            <Button type="submit" variant="primary" isLoading={isSubmitting}>
+              {editingAction ? "Salvar Alterações" : "Adicionar Ação"}
+            </Button>
+          </div>
+        </form>
+      </Modal>
 
       {/* Board Kanban */}
       <Card>
@@ -395,104 +407,33 @@ export const ActionsManager: React.FC<ActionsManagerProps> = ({
                           className="bg-white p-3 rounded-lg shadow-sm border border-gray-200 cursor-move transition-all duration-200 hover:shadow-md active:shadow-lg"
                         >
                           <div className="flex flex-col space-y-2">
-                            {/* Descrição da Ação - Editável quando em modo de edição */}
-                            {editingActionId === action.id ? (
-                              <div className="space-y-2">
-                                <input
-                                  type="text"
-                                  value={editDescription}
-                                  onChange={(e) =>
-                                    setEditDescription(e.target.value)
-                                  }
-                                  className="w-full p-2 border border-gray-300 rounded text-sm"
-                                  placeholder="Descrição da ação"
-                                  autoFocus
-                                />
-                                <div className="flex space-x-2">
-                                  <Button
-                                    variant="primary"
-                                    size="sm"
-                                    onClick={() => handleSaveEdit(action.id)}
-                                    isLoading={updatingActions[action.id]}
-                                  >
-                                    Salvar
-                                  </Button>
-                                  <Button
-                                    variant="secondary"
-                                    size="sm"
-                                    onClick={handleCancelEdit}
-                                  >
-                                    Cancelar
-                                  </Button>
-                                </div>
-                              </div>
-                            ) : (
-                              <>
-                                <p className="font-medium text-sm">
-                                  {action.description}
-                                </p>
-                                <p className="text-xs text-gray-600">
-                                  Prazo:{" "}
-                                  {formatTimestampForDisplay(action.deadline)}
-                                </p>
+                            <p className="font-medium text-sm">
+                              {action.description}
+                            </p>
+                            <p className="text-xs text-gray-600">
+                              Prazo:{" "}
+                              {formatTimestampForDisplay(action.deadline)}
+                            </p>
 
-                                <div className="flex items-center justify-between pt-2">
-                                  <div className="relative">
-                                    <input
-                                      type="datetime-local"
-                                      value={
-                                        tempDeadlines[action.id] ||
-                                        timestampToDatetimeLocal(
-                                          action.deadline,
-                                        )
-                                      }
-                                      onChange={(e) =>
-                                        handleDeadlineChange(
-                                          action.id,
-                                          e.target.value,
-                                        )
-                                      }
-                                      onBlur={() =>
-                                        handleDeadlineBlur(action.id)
-                                      }
-                                      disabled={updatingActions[action.id]}
-                                      className={`text-xs p-1 border rounded w-32 ${
-                                        updatingActions[action.id]
-                                          ? "opacity-50"
-                                          : ""
-                                      }`}
-                                    />
-                                    {updatingActions[action.id] && (
-                                      <div className="absolute -right-6 top-1/2 transform -translate-y-1/2">
-                                        <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-blue-600"></div>
-                                      </div>
-                                    )}
-                                  </div>
-
-                                  {/* Botões de Ação */}
-                                  <div className="flex space-x-1">
-                                    <Button
-                                      variant="secondary"
-                                      size="sm"
-                                      onClick={() => handleStartEdit(action)}
-                                      disabled={updatingActions[action.id]}
-                                    >
-                                      Editar
-                                    </Button>
-                                    <Button
-                                      variant="danger"
-                                      size="sm"
-                                      onClick={() =>
-                                        handleDeleteAction(action.id)
-                                      }
-                                      isLoading={updatingActions[action.id]}
-                                    >
-                                      Excluir
-                                    </Button>
-                                  </div>
-                                </div>
-                              </>
-                            )}
+                            {/* Botões de Ação - Removida a caixa de data */}
+                            <div className="flex items-center justify-end pt-2 space-x-1">
+                              <Button
+                                variant="secondary"
+                                size="sm"
+                                onClick={() => openEditActionModal(action)}
+                                disabled={updatingActions[action.id]}
+                              >
+                                Editar
+                              </Button>
+                              <Button
+                                variant="danger"
+                                size="sm"
+                                onClick={() => handleDeleteAction(action.id)}
+                                isLoading={updatingActions[action.id]}
+                              >
+                                Excluir
+                              </Button>
+                            </div>
                           </div>
                         </div>
                       ))}

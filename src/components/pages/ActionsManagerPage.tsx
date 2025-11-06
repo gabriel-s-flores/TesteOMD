@@ -69,12 +69,13 @@ export const ActionsManagerPage: React.FC = () => {
   const editActionMutation = useMutation({
     mutationFn: ({
       actionId,
-      description,
+      updates,
     }: {
       actionId: string;
-      description: string;
+      updates: { description: string; deadline: number };
     }) =>
-      mockApi.updateActionDescription(planId, actionId, description),
+      // Atualize sua API para aceitar ambos os campos
+      mockApi.updateActionDescriptionAndDeadline(planId, actionId, updates),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["plan", planId] });
       queryClient.invalidateQueries({ queryKey: ["actionPlans"] });
@@ -83,16 +84,18 @@ export const ActionsManagerPage: React.FC = () => {
 
   // Mutation para excluir ação
   const deleteActionMutation = useMutation({
-    mutationFn: (actionId: string) =>
-      mockApi.deleteAction(planId, actionId),
+    mutationFn: (actionId: string) => mockApi.deleteAction(planId, actionId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["plan", planId] });
       queryClient.invalidateQueries({ queryKey: ["actionPlans"] });
     },
   });
 
-  const handleEditAction = async (actionId: string, description: string) => {
-    await editActionMutation.mutateAsync({ actionId, description });
+  const handleEditAction = async (
+    actionId: string,
+    updates: { description: string; deadline: number },
+  ) => {
+    await editActionMutation.mutateAsync({ actionId, updates });
   };
 
   const handleDeleteAction = async (actionId: string) => {
@@ -128,10 +131,13 @@ export const ActionsManagerPage: React.FC = () => {
         plan={plan}
         onAddAction={handleAddAction}
         onUpdateAction={handleUpdateAction}
-        onEditAction={handleEditAction}
+        onEditAction={handleEditAction} // Agora recebe description E deadline
         onDeleteAction={handleDeleteAction}
         isLoading={
-          addActionMutation.isPending || updateActionMutation.isPending
+          addActionMutation.isPending ||
+          updateActionMutation.isPending ||
+          editActionMutation.isPending ||
+          deleteActionMutation.isPending
         }
       />
     </div>

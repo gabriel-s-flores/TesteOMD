@@ -1,3 +1,4 @@
+import { Link } from "@tanstack/react-router"; // Add this import
 import type { ActionPlan } from "../../types";
 import { formatTimestampForDisplay } from "../../utils/dateUtils";
 import { Button } from "../ui/Button";
@@ -6,7 +7,7 @@ import { Card, CardContent, CardHeader } from "../ui/Card";
 interface PlanCardProps {
   plan: ActionPlan;
   onEdit: (plan: ActionPlan) => void;
-  onManageActions: (plan: ActionPlan) => void;
+  // REMOVED: onManageActions prop
   onDelete: (planId: string) => void;
   isDeleting: boolean;
   deletingPlanId: string | null;
@@ -15,7 +16,7 @@ interface PlanCardProps {
 export const PlanCard = ({
   plan,
   onEdit,
-  onManageActions,
+  // REMOVED: onManageActions
   onDelete,
   isDeleting,
   deletingPlanId,
@@ -49,13 +50,14 @@ export const PlanCard = ({
             <Button variant="primary" size="sm" onClick={() => onEdit(plan)}>
               Editar
             </Button>
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={() => onManageActions(plan)}
+            {/* Replace the button with a Link */}
+            <Link
+              to="/plans/$id/actions"
+              params={{ id: plan.id }}
+              className="inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-gray-700 bg-gray-100 hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
             >
               Gerenciar Ações ({plan.actions.length})
-            </Button>
+            </Link>
             <Button
               variant="danger"
               size="sm"

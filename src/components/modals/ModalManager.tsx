@@ -1,5 +1,4 @@
-import type { Action, ActionPlan } from "../../types";
-import { ActionsManager } from "../ActionsManager";
+import type { ActionPlan } from "../../types";
 import { CreatePlanForm } from "../forms/CreatePlanForm";
 import { Modal } from "../ui/Modal";
 
@@ -12,21 +11,12 @@ interface ModalManagerProps {
     isOpen: boolean;
     close: () => void;
   };
-  actionsModal: {
-    isOpen: boolean;
-    close: () => void;
-  };
   selectedPlan: ActionPlan | null | undefined;
   onCreatePlan: (
     data: Omit<ActionPlan, "id" | "createdAt" | "actions">,
   ) => Promise<void>;
   onEditPlan: (
     data: Omit<ActionPlan, "id" | "createdAt" | "actions">,
-  ) => Promise<void>;
-  onAddAction: (actionData: Omit<Action, "id">) => Promise<void>;
-  onUpdateAction: (
-    actionId: string,
-    updates: { deadline?: number; status?: Action["status"] },
   ) => Promise<void>;
   isCreatingPlan: boolean;
   isUpdatingPlan: boolean;
@@ -35,12 +25,9 @@ interface ModalManagerProps {
 export const ModalManager = ({
   createModal,
   editModal,
-  actionsModal,
   selectedPlan,
   onCreatePlan,
   onEditPlan,
-  onAddAction,
-  onUpdateAction,
   isCreatingPlan,
   isUpdatingPlan,
 }: ModalManagerProps) => {
@@ -71,23 +58,6 @@ export const ModalManager = ({
             onCancel={editModal.close}
             initialData={selectedPlan}
             isLoading={isUpdatingPlan}
-          />
-        )}
-      </Modal>
-
-      {/* Manage Actions Modal */}
-      <Modal
-        isOpen={actionsModal.isOpen}
-        onClose={actionsModal.close}
-        title={`Gerenciar Ações - ${selectedPlan?.title || ""}`}
-        size="lg"
-      >
-        {selectedPlan && (
-          <ActionsManager
-            plan={selectedPlan}
-            onAddAction={onAddAction}
-            onUpdateAction={onUpdateAction}
-            isLoading={false}
           />
         )}
       </Modal>

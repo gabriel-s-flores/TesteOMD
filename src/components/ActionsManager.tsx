@@ -12,11 +12,11 @@ import { Card, CardContent, CardHeader } from "./ui/Card";
 
 interface ActionsManagerProps {
   plan: ActionPlan;
-  onAddAction: (action: Omit<Action, "id">) => Promise<void>;
+  onAddAction: (actionData: Omit<Action, "id">) => Promise<void>;
   onUpdateAction: (
     actionId: string,
-    updates: { deadline?: number; status?: Action["status"] },
-  ) => Promise<void>;
+    updates: { status?: Action["status"]; deadline?: number },
+  ) => Promise<Action | void>;
   isLoading?: boolean;
 }
 
@@ -50,6 +50,16 @@ export const ActionsManager: React.FC<ActionsManagerProps> = ({
     {},
   );
 
+  // Add optimistic state for instant updates
+  const [optimisticActions, setOptimisticActions] = useState<Action[]>(
+    plan.actions,
+  );
+
+  // Update optimistic actions when plan.actions changes
+  React.useEffect(() => {
+    setOptimisticActions(plan.actions);
+  }, [plan.actions]);
+
   const handleAddAction = async (data: ActionFormData) => {
     try {
       const deadlineTimestamp = datetimeLocalToTimestamp(data.deadline);
@@ -60,7 +70,7 @@ export const ActionsManager: React.FC<ActionsManagerProps> = ({
         status: "A Fazer",
         actions: function (): unknown {
           throw new Error("Function not implemented.");
-        }
+        },
       });
       reset({
         description: "",
@@ -75,6 +85,13 @@ export const ActionsManager: React.FC<ActionsManagerProps> = ({
     actionId: string,
     newStatus: Action["status"],
   ) => {
+    // Optimistically update the UI immediately
+    setOptimisticActions((prev) =>
+      prev.map((action) =>
+        action.id === actionId ? { ...action, status: newStatus } : action,
+      ),
+    );
+
     setUpdatingActions((prev) => ({ ...prev, [actionId]: true }));
     try {
       const currentAction = plan.actions.find((a) => a.id === actionId);
@@ -86,6 +103,8 @@ export const ActionsManager: React.FC<ActionsManagerProps> = ({
       }
     } catch (error) {
       console.error("Erro ao atualizar status:", error);
+      // Revert optimistic update on error
+      setOptimisticActions(plan.actions);
     } finally {
       setUpdatingActions((prev) => ({ ...prev, [actionId]: false }));
     }
@@ -128,51 +147,67 @@ export const ActionsManager: React.FC<ActionsManagerProps> = ({
     }
   };
 
-  // Drag and Drop handlers
+  // Improved Drag and Drop handlers
   const handleDragStart = (e: React.DragEvent, actionId: string) => {
-    e.dataTransfer.setData("actionId", actionId);
-    e.currentTarget.classList.add("opacity-50");
+    e.dataTransfer.setData("text/plain", actionId);
+    e.dataTransfer.effectAllowed = "move";
+    // Use setTimeout to ensure the class is added after drag starts
+    setTimeout(() => {
+      e.currentTarget.classList.add("opacity-30", "scale-95");
+    }, 0);
   };
 
   const handleDragEnd = (e: React.DragEvent) => {
-    e.currentTarget.classList.remove("opacity-50");
+    e.currentTarget.classList.remove("opacity-30", "scale-95");
   };
 
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
-    e.currentTarget.classList.add("bg-blue-50");
-  };
-
-  const handleDragLeave = (e: React.DragEvent) => {
-    e.currentTarget.classList.remove("bg-blue-50");
-  };
-
-  const handleDrop = async (e: React.DragEvent, newStatus: Action["status"]) => {
-    e.preventDefault();
-    e.currentTarget.classList.remove("bg-blue-50");
-
-    const actionId = e.dataTransfer.getData("actionId");
-    if (actionId) {
-      await handleStatusChange(actionId, newStatus);
+    e.dataTransfer.dropEffect = "move";
+    // Only add visual feedback if we're actually dragging something
+    if (e.dataTransfer.types.includes("text/plain")) {
+      e.currentTarget.classList.add("bg-blue-50", "border-blue-300");
     }
   };
 
-  // Agrupar ações por status
+  const handleDragLeave = (e: React.DragEvent) => {
+    // Only remove if leaving the element (not just moving between children)
+    const relatedTarget = e.relatedTarget as Node;
+    if (!e.currentTarget.contains(relatedTarget)) {
+      e.currentTarget.classList.remove("bg-blue-50", "border-blue-300");
+    }
+  };
+
+  const handleDrop = async (
+    e: React.DragEvent,
+    newStatus: Action["status"],
+  ) => {
+    e.preventDefault();
+    e.currentTarget.classList.remove("bg-blue-50", "border-blue-300");
+
+    const actionId = e.dataTransfer.getData("text/plain");
+    if (actionId) {
+      // Don't await - let it run in background for instant response
+      handleStatusChange(actionId, newStatus);
+    }
+  };
+
+  // Use optimisticActions instead of plan.actions
   const actionsByStatus = useMemo(() => {
     const grouped = {
       "A Fazer": [] as Action[],
-      "Fazendo": [] as Action[],
-      "Feita": [] as Action[],
+      Fazendo: [] as Action[],
+      Feita: [] as Action[],
     };
 
-    plan.actions.forEach((action) => {
+    optimisticActions.forEach((action) => {
       if (grouped[action.status]) {
         grouped[action.status].push(action);
       }
     });
 
     return grouped;
-  }, [plan.actions]);
+  }, [optimisticActions]);
 
   const getStatusVariant = (status: Action["status"]) => {
     switch (status) {
@@ -190,13 +225,13 @@ export const ActionsManager: React.FC<ActionsManagerProps> = ({
   const getColumnStyle = (status: Action["status"]) => {
     switch (status) {
       case "A Fazer":
-        return "border-gray-300";
+        return "border-gray-300 bg-gray-50/50";
       case "Fazendo":
-        return "border-yellow-300";
+        return "border-yellow-300 bg-yellow-50/50";
       case "Feita":
-        return "border-green-300";
+        return "border-green-300 bg-green-50/50";
       default:
-        return "border-gray-300";
+        return "border-gray-300 bg-gray-50/50";
     }
   };
 
@@ -276,83 +311,95 @@ export const ActionsManager: React.FC<ActionsManagerProps> = ({
       <Card>
         <CardHeader>
           <h3 className="text-lg font-semibold">
-            Board de Ações ({plan.actions.length})
+            Board de Ações ({optimisticActions.length})
           </h3>
         </CardHeader>
         <CardContent>
-          {plan.actions.length === 0 ? (
+          {optimisticActions.length === 0 ? (
             <p className="text-gray-500 text-center py-4">
               Nenhuma ação cadastrada para este plano.
             </p>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {(["A Fazer", "Fazendo", "Feita"] as Action["status"][]).map((status) => (
-                <div
-                  key={status}
-                  className={`border-2 border-dashed rounded-lg p-4 min-h-[200px] ${getColumnStyle(status)}`}
-                  onDragOver={handleDragOver}
-                  onDragLeave={handleDragLeave}
-                  onDrop={(e) => handleDrop(e, status)}
-                >
-                  <div className="flex items-center justify-between mb-4">
-                    <h4 className="font-semibold text-lg">{status}</h4>
-                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusVariant(status)}`}>
-                      {actionsByStatus[status]?.length || 0}
-                    </span>
-                  </div>
-
-                  <div className="space-y-3">
-                    {actionsByStatus[status]?.map((action) => (
-                      <div
-                        key={action.id}
-                        draggable
-                        onDragStart={(e) => handleDragStart(e, action.id)}
-                        onDragEnd={handleDragEnd}
-                        className="bg-white p-3 rounded-lg shadow-sm border border-gray-200 cursor-move transition-all duration-200 hover:shadow-md"
+              {(["A Fazer", "Fazendo", "Feita"] as Action["status"][]).map(
+                (status) => (
+                  <div
+                    key={status}
+                    className={`border-2 border-dashed rounded-lg p-4 min-h-[200px] transition-colors duration-200 ${getColumnStyle(status)}`}
+                    onDragOver={handleDragOver}
+                    onDragLeave={handleDragLeave}
+                    onDrop={(e) => handleDrop(e, status)}
+                  >
+                    <div className="flex items-center justify-between mb-4">
+                      <h4 className="font-semibold text-lg">{status}</h4>
+                      <span
+                        className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusVariant(status)}`}
                       >
-                        <div className="flex flex-col space-y-2">
-                          <p className="font-medium text-sm">{action.description}</p>
-                          <p className="text-xs text-gray-600">
-                            Prazo: {formatTimestampForDisplay(action.deadline)}
-                          </p>
+                        {actionsByStatus[status]?.length || 0}
+                      </span>
+                    </div>
 
-                          <div className="flex items-center justify-between pt-2">
-                            <div className="relative">
-                              <input
-                                type="datetime-local"
-                                value={
-                                  tempDeadlines[action.id] ||
-                                  timestampToDatetimeLocal(action.deadline)
-                                }
-                                onChange={(e) =>
-                                  handleDeadlineChange(action.id, e.target.value)
-                                }
-                                onBlur={() => handleDeadlineBlur(action.id)}
-                                //onKeyPress={(e) => handleDeadlineKeyPress(action.id, e)}
-                                disabled={updatingActions[action.id]}
-                                className={`text-xs p-1 border rounded w-32 ${
-                                  updatingActions[action.id] ? "opacity-50" : ""
-                                }`}
-                              />
-                              {updatingActions[action.id] && (
-                                <div className="absolute -right-6 top-1/2 transform -translate-y-1/2">
-                                  <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-blue-600"></div>
-                                </div>
-                              )}
+                    <div className="space-y-3">
+                      {actionsByStatus[status]?.map((action) => (
+                        <div
+                          key={action.id}
+                          draggable
+                          onDragStart={(e) => handleDragStart(e, action.id)}
+                          onDragEnd={handleDragEnd}
+                          className="bg-white p-3 rounded-lg shadow-sm border border-gray-200 cursor-move transition-all duration-200 hover:shadow-md active:shadow-lg"
+                        >
+                          <div className="flex flex-col space-y-2">
+                            <p className="font-medium text-sm">
+                              {action.description}
+                            </p>
+                            <p className="text-xs text-gray-600">
+                              Prazo:{" "}
+                              {formatTimestampForDisplay(action.deadline)}
+                            </p>
+
+                            <div className="flex items-center justify-between pt-2">
+                              <div className="relative">
+                                <input
+                                  type="datetime-local"
+                                  value={
+                                    tempDeadlines[action.id] ||
+                                    timestampToDatetimeLocal(action.deadline)
+                                  }
+                                  onChange={(e) =>
+                                    handleDeadlineChange(
+                                      action.id,
+                                      e.target.value,
+                                    )
+                                  }
+                                  onBlur={() => handleDeadlineBlur(action.id)}
+                                  disabled={updatingActions[action.id]}
+                                  className={`text-xs p-1 border rounded w-32 ${
+                                    updatingActions[action.id]
+                                      ? "opacity-50"
+                                      : ""
+                                  }`}
+                                />
+                                {updatingActions[action.id] && (
+                                  <div className="absolute -right-6 top-1/2 transform -translate-y-1/2">
+                                    <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-blue-600"></div>
+                                  </div>
+                                )}
+                              </div>
                             </div>
                           </div>
                         </div>
-                      </div>
-                    ))}
+                      ))}
 
-                    {(!actionsByStatus[status] || actionsByStatus[status].length === 0) && (
-                      <div className="text-center py-8 text-gray-400 border-2 border-dashed border-gray-300 rounded-lg">
-                        Arraste ações para aqui
-                      </div>
-                    )}
+                      {(!actionsByStatus[status] ||
+                        actionsByStatus[status].length === 0) && (
+                        <div className="text-center py-8 text-gray-400 border-2 border-dashed border-gray-300 rounded-lg transition-colors duration-200">
+                          Arraste ações para aqui
+                        </div>
+                      )}
+                    </div>
                   </div>
-                </div>
-              ))}
+                ),
+              )}
             </div>
           )}
         </CardContent>

@@ -5,7 +5,6 @@ import { PlanCard } from "./PlanCard";
 interface PlanListProps {
   plans: ActionPlan[];
   onEditPlan: (plan: ActionPlan) => void;
-  onManageActions: (plan: ActionPlan) => void;
   onDeletePlan: (planId: string) => void;
   isDeleting: boolean;
   deletingPlanId: string | null;
@@ -14,7 +13,6 @@ interface PlanListProps {
 export const PlanList = ({
   plans,
   onEditPlan,
-  onManageActions,
   onDeletePlan,
   isDeleting,
   deletingPlanId,
@@ -38,7 +36,6 @@ export const PlanList = ({
           key={plan.id}
           plan={plan}
           onEdit={onEditPlan}
-          onManageActions={onManageActions}
           onDelete={onDeletePlan}
           isDeleting={isDeleting}
           deletingPlanId={deletingPlanId}

@@ -1,13 +1,13 @@
 import { useState } from "react";
-import { PlanList } from "../plans/PlanList";
-import { ModalManager } from "../modals/ModalManager";
-import { ToastContainer } from "../ui/ToastContainer";
-import { LoadingSpinner } from "../ui/LoadingSpinner";
-import { Button } from "../ui/Button";
 import { useActionPlans } from "../../hooks/useActionPlans";
 import { useModal } from "../../hooks/useModal";
 import { useToast } from "../../hooks/useToast";
-import type { Action, ActionPlan } from "../../types";
+import type { ActionPlan } from "../../types"; // Remove Action import
+import { ModalManager } from "../modals/ModalManager";
+import { PlanList } from "../plans/PlanList";
+import { Button } from "../ui/Button";
+import { LoadingSpinner } from "../ui/LoadingSpinner";
+import { ToastContainer } from "../ui/ToastContainer";
 
 export function IndexComponent() {
   const {
@@ -16,8 +16,7 @@ export function IndexComponent() {
     createPlan,
     updatePlan,
     deletePlan,
-    addAction,
-    updateAction,
+    // Remove addAction and updateAction since they're now handled on the page
     isCreatingPlan,
     isUpdatingPlan,
     isDeletingPlan,
@@ -25,7 +24,7 @@ export function IndexComponent() {
 
   const createModal = useModal();
   const editModal = useModal();
-  const actionsModal = useModal();
+  // REMOVED: actionsModal
   const { toasts, addToast, removeToast } = useToast();
 
   const [selectedPlanId, setSelectedPlanId] = useState<string | null>(null);
@@ -67,40 +66,9 @@ export function IndexComponent() {
     }
   };
 
-  const handleAddAction = async (actionData: Omit<Action, "id">) => {
-    if (!selectedPlanId) return;
+  // REMOVED: handleAddAction function
 
-    try {
-      await addAction({ planId: selectedPlanId, action: actionData });
-      addToast({ type: "success", title: "Ação adicionada com sucesso!" });
-    } catch (error) {
-      console.error(error);
-      addToast({ type: "error", title: "Erro ao adicionar ação" });
-    }
-  };
-
-  const handleUpdateAction = async (
-    actionId: string,
-    updates: { deadline?: number; status?: Action["status"] },
-  ) => {
-    if (!selectedPlanId) return;
-
-    try {
-      const updatesWithDateDeadline = {
-        ...updates,
-        deadline: updates.deadline ? new Date(updates.deadline) : undefined,
-      };
-
-      await updateAction({
-        planId: selectedPlanId,
-        actionId,
-        updates: updatesWithDateDeadline,
-      });
-    } catch (error) {
-      console.error(error);
-      addToast({ type: "error", title: "Erro ao atualizar ação" });
-    }
-  };
+  // REMOVED: handleUpdateAction function
 
   const handleDeletePlan = async (planId: string) => {
     setDeletingPlanId(planId);
@@ -120,20 +88,14 @@ export function IndexComponent() {
     editModal.open();
   };
 
-  const openActionsModal = (plan: ActionPlan) => {
-    setSelectedPlanId(plan.id);
-    actionsModal.open();
-  };
+  // REMOVED: openActionsModal function
 
   const closeEditModal = () => {
     editModal.close();
     setSelectedPlanId(null);
   };
 
-  const closeActionsModal = () => {
-    actionsModal.close();
-    setSelectedPlanId(null);
-  };
+  // REMOVED: closeActionsModal function
 
   if (isLoading) {
     return <LoadingSpinner />;
@@ -154,7 +116,6 @@ export function IndexComponent() {
         <PlanList
           plans={plans}
           onEditPlan={openEditModal}
-          onManageActions={openActionsModal}
           onDeletePlan={handleDeletePlan}
           isDeleting={isDeletingPlan}
           deletingPlanId={deletingPlanId}
@@ -164,12 +125,9 @@ export function IndexComponent() {
       <ModalManager
         createModal={createModal}
         editModal={{ ...editModal, close: closeEditModal }}
-        actionsModal={{ ...actionsModal, close: closeActionsModal }}
         selectedPlan={selectedPlan}
         onCreatePlan={handleCreatePlan}
         onEditPlan={handleEditPlan}
-        onAddAction={handleAddAction}
-        onUpdateAction={handleUpdateAction}
         isCreatingPlan={isCreatingPlan}
         isUpdatingPlan={isUpdatingPlan}
       />

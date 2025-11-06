@@ -17,6 +17,8 @@ interface ActionsManagerProps {
     actionId: string,
     updates: { status?: Action["status"]; deadline?: number },
   ) => Promise<Action | void>;
+  onEditAction: (actionId: string, description: string) => Promise<void>; // Nova prop
+  onDeleteAction: (actionId: string) => Promise<void>; // Nova prop
   isLoading?: boolean;
 }
 
@@ -29,6 +31,8 @@ export const ActionsManager: React.FC<ActionsManagerProps> = ({
   plan,
   onAddAction,
   onUpdateAction,
+  onEditAction,
+  onDeleteAction,
 }) => {
   const defaultDeadline = timestampToDatetimeLocal(createFutureTimestamp());
 
@@ -49,6 +53,8 @@ export const ActionsManager: React.FC<ActionsManagerProps> = ({
   const [tempDeadlines, setTempDeadlines] = useState<Record<string, string>>(
     {},
   );
+  const [editingActionId, setEditingActionId] = useState<string | null>(null);
+  const [editDescription, setEditDescription] = useState("");
 
   // Add optimistic state for instant updates
   const [optimisticActions, setOptimisticActions] = useState<Action[]>(
@@ -110,6 +116,50 @@ export const ActionsManager: React.FC<ActionsManagerProps> = ({
     }
   };
 
+  // Função para iniciar a edição
+  const handleStartEdit = (action: Action) => {
+    setEditingActionId(action.id);
+    setEditDescription(action.description);
+  };
+
+  // Função para cancelar a edição
+  const handleCancelEdit = () => {
+    setEditingActionId(null);
+    setEditDescription("");
+  };
+
+  // Função para salvar a edição
+  const handleSaveEdit = async (actionId: string) => {
+    if (!editDescription.trim()) return;
+
+    setUpdatingActions((prev) => ({ ...prev, [actionId]: true }));
+    try {
+      await onEditAction(actionId, editDescription);
+      setEditingActionId(null);
+      setEditDescription("");
+    } catch (error) {
+      console.error("Erro ao editar ação:", error);
+    } finally {
+      setUpdatingActions((prev) => ({ ...prev, [actionId]: false }));
+    }
+  };
+
+  // Função para excluir ação
+  const handleDeleteAction = async (actionId: string) => {
+    if (!window.confirm("Tem certeza que deseja excluir esta ação?")) {
+      return;
+    }
+
+    setUpdatingActions((prev) => ({ ...prev, [actionId]: true }));
+    try {
+      await onDeleteAction(actionId);
+    } catch (error) {
+      console.error("Erro ao excluir ação:", error);
+    } finally {
+      setUpdatingActions((prev) => ({ ...prev, [actionId]: false }));
+    }
+  };
+
   const handleDeadlineChange = (actionId: string, newDeadline: string) => {
     setTempDeadlines((prev) => ({
       ...prev,
@@ -151,7 +201,6 @@ export const ActionsManager: React.FC<ActionsManagerProps> = ({
   const handleDragStart = (e: React.DragEvent, actionId: string) => {
     e.dataTransfer.setData("text/plain", actionId);
     e.dataTransfer.effectAllowed = "move";
-    // Use setTimeout to ensure the class is added after drag starts
     setTimeout(() => {
       e.currentTarget.classList.add("opacity-30", "scale-95");
     }, 0);
@@ -164,14 +213,12 @@ export const ActionsManager: React.FC<ActionsManagerProps> = ({
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
     e.dataTransfer.dropEffect = "move";
-    // Only add visual feedback if we're actually dragging something
     if (e.dataTransfer.types.includes("text/plain")) {
       e.currentTarget.classList.add("bg-blue-50", "border-blue-300");
     }
   };
 
   const handleDragLeave = (e: React.DragEvent) => {
-    // Only remove if leaving the element (not just moving between children)
     const relatedTarget = e.relatedTarget as Node;
     if (!e.currentTarget.contains(relatedTarget)) {
       e.currentTarget.classList.remove("bg-blue-50", "border-blue-300");
@@ -187,7 +234,6 @@ export const ActionsManager: React.FC<ActionsManagerProps> = ({
 
     const actionId = e.dataTransfer.getData("text/plain");
     if (actionId) {
-      // Don't await - let it run in background for instant response
       handleStatusChange(actionId, newStatus);
     }
   };
@@ -349,43 +395,104 @@ export const ActionsManager: React.FC<ActionsManagerProps> = ({
                           className="bg-white p-3 rounded-lg shadow-sm border border-gray-200 cursor-move transition-all duration-200 hover:shadow-md active:shadow-lg"
                         >
                           <div className="flex flex-col space-y-2">
-                            <p className="font-medium text-sm">
-                              {action.description}
-                            </p>
-                            <p className="text-xs text-gray-600">
-                              Prazo:{" "}
-                              {formatTimestampForDisplay(action.deadline)}
-                            </p>
-
-                            <div className="flex items-center justify-between pt-2">
-                              <div className="relative">
+                            {/* Descrição da Ação - Editável quando em modo de edição */}
+                            {editingActionId === action.id ? (
+                              <div className="space-y-2">
                                 <input
-                                  type="datetime-local"
-                                  value={
-                                    tempDeadlines[action.id] ||
-                                    timestampToDatetimeLocal(action.deadline)
-                                  }
+                                  type="text"
+                                  value={editDescription}
                                   onChange={(e) =>
-                                    handleDeadlineChange(
-                                      action.id,
-                                      e.target.value,
-                                    )
+                                    setEditDescription(e.target.value)
                                   }
-                                  onBlur={() => handleDeadlineBlur(action.id)}
-                                  disabled={updatingActions[action.id]}
-                                  className={`text-xs p-1 border rounded w-32 ${
-                                    updatingActions[action.id]
-                                      ? "opacity-50"
-                                      : ""
-                                  }`}
+                                  className="w-full p-2 border border-gray-300 rounded text-sm"
+                                  placeholder="Descrição da ação"
+                                  autoFocus
                                 />
-                                {updatingActions[action.id] && (
-                                  <div className="absolute -right-6 top-1/2 transform -translate-y-1/2">
-                                    <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-blue-600"></div>
-                                  </div>
-                                )}
+                                <div className="flex space-x-2">
+                                  <Button
+                                    variant="primary"
+                                    size="sm"
+                                    onClick={() => handleSaveEdit(action.id)}
+                                    isLoading={updatingActions[action.id]}
+                                  >
+                                    Salvar
+                                  </Button>
+                                  <Button
+                                    variant="secondary"
+                                    size="sm"
+                                    onClick={handleCancelEdit}
+                                  >
+                                    Cancelar
+                                  </Button>
+                                </div>
                               </div>
-                            </div>
+                            ) : (
+                              <>
+                                <p className="font-medium text-sm">
+                                  {action.description}
+                                </p>
+                                <p className="text-xs text-gray-600">
+                                  Prazo:{" "}
+                                  {formatTimestampForDisplay(action.deadline)}
+                                </p>
+
+                                <div className="flex items-center justify-between pt-2">
+                                  <div className="relative">
+                                    <input
+                                      type="datetime-local"
+                                      value={
+                                        tempDeadlines[action.id] ||
+                                        timestampToDatetimeLocal(
+                                          action.deadline,
+                                        )
+                                      }
+                                      onChange={(e) =>
+                                        handleDeadlineChange(
+                                          action.id,
+                                          e.target.value,
+                                        )
+                                      }
+                                      onBlur={() =>
+                                        handleDeadlineBlur(action.id)
+                                      }
+                                      disabled={updatingActions[action.id]}
+                                      className={`text-xs p-1 border rounded w-32 ${
+                                        updatingActions[action.id]
+                                          ? "opacity-50"
+                                          : ""
+                                      }`}
+                                    />
+                                    {updatingActions[action.id] && (
+                                      <div className="absolute -right-6 top-1/2 transform -translate-y-1/2">
+                                        <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-blue-600"></div>
+                                      </div>
+                                    )}
+                                  </div>
+
+                                  {/* Botões de Ação */}
+                                  <div className="flex space-x-1">
+                                    <Button
+                                      variant="secondary"
+                                      size="sm"
+                                      onClick={() => handleStartEdit(action)}
+                                      disabled={updatingActions[action.id]}
+                                    >
+                                      Editar
+                                    </Button>
+                                    <Button
+                                      variant="danger"
+                                      size="sm"
+                                      onClick={() =>
+                                        handleDeleteAction(action.id)
+                                      }
+                                      isLoading={updatingActions[action.id]}
+                                    >
+                                      Excluir
+                                    </Button>
+                                  </div>
+                                </div>
+                              </>
+                            )}
                           </div>
                         </div>
                       ))}

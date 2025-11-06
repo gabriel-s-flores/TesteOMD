@@ -3,14 +3,14 @@ export interface Action {
   id: string;
   description: string;
   status: "A Fazer" | "Fazendo" | "Feita";
-  deadline: number; // timestamp em milissegundos
+  deadline: number; // timestamp in milliseconds
 }
 
 export interface ActionPlan {
   id: string;
   title: string;
   objective: string;
-  createdAt: number; // timestamp em milissegundos
+  createdAt: number; // timestamp in milliseconds
   status: "Não Iniciado" | "Em Andamento" | "Concluído";
   actions: Action[];
 }

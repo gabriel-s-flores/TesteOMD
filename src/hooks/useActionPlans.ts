@@ -13,7 +13,7 @@ export const useActionPlans = () => {
     queryFn: mockApi.getActionPlans,
   });
 
-  // Função para buscar plano atualizado da API
+  // Function to search for updated plan from API
   const refreshPlan = useCallback(async (planId: string) => {
     return await mockApi.getActionPlan(planId);
   }, []);
@@ -82,7 +82,7 @@ export const useActionPlans = () => {
       action: Omit<Action, "id">;
     }) => mockApi.addAction(planId, action),
     onSuccess: (newAction, variables) => {
-      // Busca o plano atualizado da API para garantir consistência
+      // Search for updated plan from API to ensure consistency
       refreshPlan(variables.planId).then((updatedPlan) => {
         if (updatedPlan) {
           queryClient.setQueryData(
@@ -122,7 +122,7 @@ export const useActionPlans = () => {
       return mockApi.updateAction(planId, actionId, apiUpdates);
     },
     onSuccess: (updatedAction, variables) => {
-      // Busca o plano atualizado da API para garantir consistência
+      // Search for updated plan from API to ensure consistency
       refreshPlan(variables.planId).then((updatedPlan) => {
         if (updatedPlan) {
           queryClient.setQueryData(

@@ -25,7 +25,7 @@ export const mockApi = {
     const newPlan: ActionPlan = {
       ...plan,
       id: String(nextId++),
-      createdAt: Date.now(), // timestamp atual
+      createdAt: Date.now(), // current timestamp
       actions: [],
     };
     actionPlans.push(newPlan);
@@ -63,7 +63,7 @@ export const mockApi = {
       id: String(nextId++),
     };
 
-    // Atualiza o plano com a nova ação
+    // Update the plan with the new action
     actionPlans[planIndex] = {
       ...actionPlans[planIndex],
       actions: [...actionPlans[planIndex].actions, newAction],
@@ -90,14 +90,14 @@ export const mockApi = {
     );
     if (actionIndex === -1) throw new Error("Ação não encontrada");
 
-    // Atualiza apenas os campos fornecidos, mantendo os existentes
+    // Update only the provided fields, keeping the existing ones
     const updatedActions = [...actionPlans[planIndex].actions];
     updatedActions[actionIndex] = {
-      ...updatedActions[actionIndex], // Manter dados existentes
-      ...updates, // Aplicar apenas as atualizações
+      ...updatedActions[actionIndex], // Keep existing data
+      ...updates, // Apply only the updates
     };
 
-    // Atualiza o plano completo
+    // Update the entire plan
     actionPlans[planIndex] = {
       ...actionPlans[planIndex],
       actions: updatedActions,
@@ -105,5 +105,50 @@ export const mockApi = {
     };
 
     return { ...updatedActions[actionIndex] };
+  },
+
+  async updateActionDescription(
+    planId: string,
+    actionId: string,
+    description: string,
+  ): Promise<Action> {
+    await delay(500);
+    const planIndex = actionPlans.findIndex((p) => p.id === planId);
+    if (planIndex === -1) throw new Error("Plano não encontrado");
+
+    const actionIndex = actionPlans[planIndex].actions.findIndex(
+      (a) => a.id === actionId,
+    );
+    if (actionIndex === -1) throw new Error("Ação não encontrada");
+
+    // Update the description
+    const updatedActions = [...actionPlans[planIndex].actions];
+    updatedActions[actionIndex] = {
+      ...updatedActions[actionIndex],
+      description,
+    };
+
+    // Update the entire plan
+    actionPlans[planIndex] = {
+      ...actionPlans[planIndex],
+      actions: updatedActions,
+    };
+
+    return { ...updatedActions[actionIndex] };
+  },
+
+  async deleteAction(planId: string, actionId: string): Promise<void> {
+    await delay(500);
+    const planIndex = actionPlans.findIndex((p) => p.id === planId);
+    if (planIndex === -1) throw new Error("Plano não encontrado");
+
+    // Removes the action
+    actionPlans[planIndex] = {
+      ...actionPlans[planIndex],
+      actions: actionPlans[planIndex].actions.filter((a) => a.id !== actionId),
+      status: calculatePlanStatus(
+        actionPlans[planIndex].actions.filter((a) => a.id !== actionId),
+      ),
+    };
   },
 };

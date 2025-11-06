@@ -66,6 +66,39 @@ export const ActionsManagerPage: React.FC = () => {
     router.navigate({ to: "/" });
   };
 
+  const editActionMutation = useMutation({
+    mutationFn: ({
+      actionId,
+      description,
+    }: {
+      actionId: string;
+      description: string;
+    }) =>
+      mockApi.updateActionDescription(planId, actionId, description),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["plan", planId] });
+      queryClient.invalidateQueries({ queryKey: ["actionPlans"] });
+    },
+  });
+
+  // Mutation para excluir ação
+  const deleteActionMutation = useMutation({
+    mutationFn: (actionId: string) =>
+      mockApi.deleteAction(planId, actionId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["plan", planId] });
+      queryClient.invalidateQueries({ queryKey: ["actionPlans"] });
+    },
+  });
+
+  const handleEditAction = async (actionId: string, description: string) => {
+    await editActionMutation.mutateAsync({ actionId, description });
+  };
+
+  const handleDeleteAction = async (actionId: string) => {
+    return await deleteActionMutation.mutateAsync(actionId);
+  };
+
   if (isLoading) return <div>Loading...</div>;
   if (error) return <div>Error: {error.message}</div>;
   if (!plan) return <div>Plan not found</div>;
@@ -95,6 +128,8 @@ export const ActionsManagerPage: React.FC = () => {
         plan={plan}
         onAddAction={handleAddAction}
         onUpdateAction={handleUpdateAction}
+        onEditAction={handleEditAction}
+        onDeleteAction={handleDeleteAction}
         isLoading={
           addActionMutation.isPending || updateActionMutation.isPending
         }

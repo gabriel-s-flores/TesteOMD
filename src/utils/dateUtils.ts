@@ -1,15 +1,15 @@
-// Converter datetime-local string para timestamp (preservando horário local)
+// Convert datetime-local string to timestamp (preserving local time)
 export const datetimeLocalToTimestamp = (datetimeString: string): number => {
   if (!datetimeString) return Date.now();
 
-  // Criar data no fuso horário local
+  // Create date in local timezone
   const localDate = new Date(datetimeString);
 
-  // Retornar timestamp (já está correto para o fuso local)
+  // Return timestamp (already correct for local timezone)
   return localDate.getTime();
 };
 
-// Converter timestamp para string datetime-local
+// Convert timestamp to string datetime-local
 export const timestampToDatetimeLocal = (timestamp: number): string => {
   const date = new Date(timestamp);
 
@@ -22,7 +22,7 @@ export const timestampToDatetimeLocal = (timestamp: number): string => {
   return `${year}-${month}-${day}T${hours}:${minutes}`;
 };
 
-// Formatar timestamp para exibição
+// Format timestamp for display
 export const formatTimestampForDisplay = (timestamp: number): string => {
   const date = new Date(timestamp);
   return date.toLocaleString("pt-BR", {
@@ -34,12 +34,12 @@ export const formatTimestampForDisplay = (timestamp: number): string => {
   });
 };
 
-// Validar se o timestamp é futuro
+// Validate if the timestamp is in the future
 export const isFutureTimestamp = (timestamp: number): boolean => {
   return timestamp > Date.now();
 };
 
-// Criar timestamp para daqui a X dias (útil para valores padrão)
+// Create timestamp for X days from now (useful for default values)
 export const createFutureTimestamp = (daysFromNow: number = 7): number => {
   const futureDate = new Date();
   futureDate.setDate(futureDate.getDate() + daysFromNow);

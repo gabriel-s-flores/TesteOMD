@@ -74,7 +74,6 @@ export const ActionsManagerPage: React.FC = () => {
       actionId: string;
       updates: { description: string; deadline: number };
     }) =>
-      // Atualize sua API para aceitar ambos os campos
       mockApi.updateActionDescriptionAndDeadline(planId, actionId, updates),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["plan", planId] });
@@ -82,7 +81,7 @@ export const ActionsManagerPage: React.FC = () => {
     },
   });
 
-  // Mutation para excluir ação
+  // Mutation to delete action
   const deleteActionMutation = useMutation({
     mutationFn: (actionId: string) => mockApi.deleteAction(planId, actionId),
     onSuccess: () => {
@@ -126,7 +125,7 @@ export const ActionsManagerPage: React.FC = () => {
         </CardContent>
       </Card>
 
-      {/* Actions Manager - same component as in your modal */}
+      {/* Actions Manager */}
       <ActionsManager
         plan={plan}
         onAddAction={handleAddAction}

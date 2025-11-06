@@ -166,7 +166,7 @@ export const mockApi = {
     );
     if (actionIndex === -1) throw new Error("Ação não encontrada");
 
-    // Atualiza a descrição e o prazo
+    // Update description and deadline
     const updatedActions = [...actionPlans[planIndex].actions];
     updatedActions[actionIndex] = {
       ...updatedActions[actionIndex],
@@ -174,7 +174,7 @@ export const mockApi = {
       deadline: updates.deadline,
     };
 
-    // Atualiza o plano completo
+    // Update the entire plan
     actionPlans[planIndex] = {
       ...actionPlans[planIndex],
       actions: updatedActions,

@@ -23,19 +23,19 @@ export const Modal: React.FC<ModalProps> = ({
   useEffect(() => {
     if (isOpen) {
       setShouldRender(true);
-      // Pequeno delay para garantir a animação de entrada
+      // Small delay to ensure the entrance animation
       const timer = setTimeout(() => setIsVisible(true), 10);
       return () => clearTimeout(timer);
     } else {
-      // Inicia animação de saída
+      // Start exit animation
       setIsVisible(false);
-      // Remove do DOM após a animação completar
+      // Remove from DOM after animation completes
       const timer = setTimeout(() => setShouldRender(false), 300);
       return () => clearTimeout(timer);
     }
   }, [isOpen]);
 
-  // Fecha o modal quando pressionar Escape
+  // Close the modal when pressing Escape
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === "Escape" && isOpen) {

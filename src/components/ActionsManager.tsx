@@ -163,7 +163,7 @@ export const ActionsManager: React.FC<ActionsManagerProps> = ({
     }
   };
 
-  // Função para excluir ação
+  // Function to delete action
   const handleDeleteAction = async (actionId: string) => {
     if (!window.confirm("Tem certeza que deseja excluir esta ação?")) {
       return;
@@ -220,7 +220,6 @@ export const ActionsManager: React.FC<ActionsManagerProps> = ({
     }
   };
 
-  // Use optimisticActions instead of plan.actions
   const actionsByStatus = useMemo(() => {
     const grouped = {
       "A Fazer": [] as Action[],

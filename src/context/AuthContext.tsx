@@ -3,6 +3,7 @@
 import { useQueryClient } from "@tanstack/react-query";
 import React, {
   createContext,
+  useCallback,
   useContext,
   useEffect,
   useMemo,
@@ -46,45 +47,46 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     setIsLoading(false);
   }, []);
 
-  const login = async (input: { email: string; password: string }) => {
-    const result = await authService.login(input);
-    setUser(result.user);
-    await queryClient.invalidateQueries({
-      queryKey: queryKeys.actionPlansRoot,
-    });
-    await queryClient.invalidateQueries({ queryKey: queryKeys.plansRoot });
-  };
+  const login = useCallback(
+    async (input: { email: string; password: string }) => {
+      const result = await authService.login(input);
+      setUser(result.user);
+      await queryClient.invalidateQueries({
+        queryKey: queryKeys.actionPlansRoot,
+      });
+      await queryClient.invalidateQueries({ queryKey: queryKeys.plansRoot });
+    },
+    [queryClient],
+  );
 
-  const register = async (input: {
-    name: string;
-    email: string;
-    password: string;
-  }) => {
-    const result = await authService.register(input);
-    setUser(result.user);
-    await queryClient.invalidateQueries({
-      queryKey: queryKeys.actionPlansRoot,
-    });
-    await queryClient.invalidateQueries({ queryKey: queryKeys.plansRoot });
-  };
+  const register = useCallback(
+    async (input: { name: string; email: string; password: string }) => {
+      const result = await authService.register(input);
+      setUser(result.user);
+      await queryClient.invalidateQueries({
+        queryKey: queryKeys.actionPlansRoot,
+      });
+      await queryClient.invalidateQueries({ queryKey: queryKeys.plansRoot });
+    },
+    [queryClient],
+  );
 
-  const logout = async () => {
+  const logout = useCallback(async () => {
     await authService.logout();
     setUser(null);
     queryClient.clear();
-  };
+  }, [queryClient]);
 
-  const requestPasswordReset = async (email: string) => {
+  const requestPasswordReset = useCallback(async (email: string) => {
     return authService.requestPasswordReset(email);
-  };
+  }, []);
 
-  const resetPassword = async (input: {
-    email: string;
-    token: string;
-    newPassword: string;
-  }) => {
-    return authService.resetPassword(input);
-  };
+  const resetPassword = useCallback(
+    async (input: { email: string; token: string; newPassword: string }) => {
+      return authService.resetPassword(input);
+    },
+    [],
+  );
 
   const value = useMemo<AuthContextValue>(
     () => ({
@@ -97,7 +99,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       requestPasswordReset,
       resetPassword,
     }),
-    [user, isLoading],
+    [
+      user,
+      isLoading,
+      login,
+      register,
+      logout,
+      requestPasswordReset,
+      resetPassword,
+    ],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

@@ -5,6 +5,7 @@ import {
 } from "@tanstack/react-query";
 import { useParams, useRouter } from "@tanstack/react-router";
 import React from "react";
+import { useAuth } from "../../context/AuthContext";
 import { mockApi } from "../../services/mockApi";
 import type { Action } from "../../types";
 import { ActionsManager } from "../ActionsManager";
@@ -15,6 +16,9 @@ export const ActionsManagerPage: React.FC = () => {
   const { id: planId } = useParams({ from: "/plans/$id/actions" });
   const router = useRouter();
   const queryClient = useQueryClient();
+  const { user } = useAuth();
+
+  const userId = user?.id;
 
   // Fetch the plan data
   const {
@@ -22,7 +26,7 @@ export const ActionsManagerPage: React.FC = () => {
     isLoading,
     error,
   } = useSuspenseQuery({
-    queryKey: ["plan", planId],
+    queryKey: ["plan", userId, planId],
     queryFn: () => mockApi.getActionPlan(planId),
   });
 
@@ -31,8 +35,8 @@ export const ActionsManagerPage: React.FC = () => {
     mutationFn: (action: Omit<Action, "id">) =>
       mockApi.addAction(planId, action),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["plan", planId] });
-      queryClient.invalidateQueries({ queryKey: ["actionPlans"] });
+      queryClient.invalidateQueries({ queryKey: ["plan", userId, planId] });
+      queryClient.invalidateQueries({ queryKey: ["actionPlans", userId] });
     },
   });
 
@@ -46,8 +50,8 @@ export const ActionsManagerPage: React.FC = () => {
       updates: { deadline?: number; status?: Action["status"] };
     }) => mockApi.updateAction(planId, actionId, updates),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["plan", planId] });
-      queryClient.invalidateQueries({ queryKey: ["actionPlans"] });
+      queryClient.invalidateQueries({ queryKey: ["plan", userId, planId] });
+      queryClient.invalidateQueries({ queryKey: ["actionPlans", userId] });
     },
   });
 
@@ -73,11 +77,10 @@ export const ActionsManagerPage: React.FC = () => {
     }: {
       actionId: string;
       updates: { description: string; deadline: number };
-    }) =>
-      mockApi.updateActionDescriptionAndDeadline(planId, actionId, updates),
+    }) => mockApi.updateActionDescriptionAndDeadline(planId, actionId, updates),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["plan", planId] });
-      queryClient.invalidateQueries({ queryKey: ["actionPlans"] });
+      queryClient.invalidateQueries({ queryKey: ["plan", userId, planId] });
+      queryClient.invalidateQueries({ queryKey: ["actionPlans", userId] });
     },
   });
 
@@ -85,8 +88,8 @@ export const ActionsManagerPage: React.FC = () => {
   const deleteActionMutation = useMutation({
     mutationFn: (actionId: string) => mockApi.deleteAction(planId, actionId),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["plan", planId] });
-      queryClient.invalidateQueries({ queryKey: ["actionPlans"] });
+      queryClient.invalidateQueries({ queryKey: ["plan", userId, planId] });
+      queryClient.invalidateQueries({ queryKey: ["actionPlans", userId] });
     },
   });
 

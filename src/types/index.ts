@@ -1,5 +1,4 @@
 export interface Action {
-  actions(actions: unknown): unknown;
   id: string;
   description: string;
   status: "A Fazer" | "Fazendo" | "Feita";
@@ -17,3 +16,16 @@ export interface ActionPlan {
 
 export type ActionStatus = Action["status"];
 export type PlanStatus = ActionPlan["status"];
+
+export interface User {
+  id: string;
+  name: string;
+  email: string;
+  createdAt: number;
+}
+
+export interface Session {
+  token: string;
+  userId: string;
+  expiresAt: number;
+}

@@ -1,16 +1,19 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useCallback } from "react";
+import { useAuth } from "../context/AuthContext";
 import { mockApi } from "../services/mockApi";
 import type { Action, ActionPlan } from "../types";
 import { useToast } from "./useToast";
 
 export const useActionPlans = () => {
+  const { user } = useAuth();
   const queryClient = useQueryClient();
   const toast = useToast();
 
   const plansQuery = useQuery({
-    queryKey: ["actionPlans"],
+    queryKey: ["actionPlans", user?.id],
     queryFn: mockApi.getActionPlans,
+    enabled: Boolean(user),
   });
 
   // Function to search for updated plan from API
@@ -35,7 +38,7 @@ export const useActionPlans = () => {
   const createPlanMutation = useMutation({
     mutationFn: mockApi.createActionPlan,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["actionPlans"] });
+      queryClient.invalidateQueries({ queryKey: ["actionPlans", user?.id] });
       onSuccess("Plano criado com sucesso!");
     },
     onError: () => onError("Erro ao criar plano"),
@@ -51,7 +54,7 @@ export const useActionPlans = () => {
     }) => mockApi.updateActionPlan(id, updates),
     onSuccess: (updatedPlan) => {
       queryClient.setQueryData(
-        ["actionPlans"],
+        ["actionPlans", user?.id],
         (old: ActionPlan[] | undefined) => {
           if (!old) return [updatedPlan];
           return old.map((plan) =>
@@ -67,7 +70,7 @@ export const useActionPlans = () => {
   const deletePlanMutation = useMutation({
     mutationFn: mockApi.deleteActionPlan,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["actionPlans"] });
+      queryClient.invalidateQueries({ queryKey: ["actionPlans", user?.id] });
       onSuccess("Plano excluído com sucesso!");
     },
     onError: () => onError("Erro ao excluir plano"),
@@ -81,12 +84,12 @@ export const useActionPlans = () => {
       planId: string;
       action: Omit<Action, "id">;
     }) => mockApi.addAction(planId, action),
-    onSuccess: (newAction, variables) => {
+    onSuccess: (_, variables) => {
       // Search for updated plan from API to ensure consistency
       refreshPlan(variables.planId).then((updatedPlan) => {
         if (updatedPlan) {
           queryClient.setQueryData(
-            ["actionPlans"],
+            ["actionPlans", user?.id],
             (old: ActionPlan[] | undefined) => {
               if (!old) return [updatedPlan];
               return old.map((plan) =>
@@ -121,12 +124,12 @@ export const useActionPlans = () => {
       };
       return mockApi.updateAction(planId, actionId, apiUpdates);
     },
-    onSuccess: (updatedAction, variables) => {
+    onSuccess: (_, variables) => {
       // Search for updated plan from API to ensure consistency
       refreshPlan(variables.planId).then((updatedPlan) => {
         if (updatedPlan) {
           queryClient.setQueryData(
-            ["actionPlans"],
+            ["actionPlans", user?.id],
             (old: ActionPlan[] | undefined) => {
               if (!old) return [updatedPlan];
               return old.map((plan) =>

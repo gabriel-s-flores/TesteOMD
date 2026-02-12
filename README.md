@@ -2,63 +2,99 @@
 
 ## Descrição
 
-Desenvolvi um sistema frontend completo para gerenciamento de planos de ação utilizando React e TypeScript. A aplicação permite criar, visualizar, editar e excluir planos de ação, além de gerenciar as ações individuais de cada plano com transição automática de status.
+Aplicação frontend em **React + TypeScript** para gestão de planos de ação com autenticação mock robusta, recuperação de senha simulada e isolamento de dados por usuário (multi-tenant).
 
-## Tecnologias e Justificativas
+Cada usuário possui seus próprios planos e ações. Ao trocar de conta, os dados exibidos mudam conforme o usuário autenticado.
 
-Escolhi React como framework principal pela sua maturidade e ecossistema robusto. Optei por TypeScript para garantir type safety e melhor manutenibilidade do código.
+---
 
-Utilizei @tanstack/react-router para roteamento devido à sua abordagem type-safe e performance superior com lazy loading nativo. Para gerenciamento de estado, implementei @tanstack/react-query que oferece cache inteligente e tratamento automático de estados de loading e erro.
+## Stack Tecnológica
 
-Para estilização, selecionei Tailwind CSS pela abordagem utility-first que permite desenvolvimento rápido e consistente. Adotei React Hook Form para formulários pela sua performance superior com renderizações mínimas.
+- **Framework:** React 19 + Vite
+- **Roteamento:** TanStack Router (file-based)
+- **Estado remoto/cache:** TanStack React Query
+- **Formulários:** React Hook Form
+- **Estilo:** Tailwind CSS
+- **Persistência mock:** LocalStorage
 
-Como build tool, escolhi Vite pelo desenvolvimento rápido com HMR instantâneo e excelente performance de build.
-
-Utilizei Bun como gerenciador de pacotes principal devido à sua velocidade superior e compatibilidade com o ecossistema npm.
-
-## Arquitetura
-
-Estruturei o projeto seguindo princípios de Atomic Design para criar uma hierarquia clara de componentes:
-
-- Componentes UI base (Button, Input, Card, Modal)
-- Componentes de formulário reutilizáveis
-- Componentes de layout complexos
-
-Implementei uma arquitetura baseada em hooks customizados para gerenciamento de estado, separando claramente as responsabilidades entre UI, lógica de negócio e comunicação com API.
-
-Para performance, utilizei React.memo em componentes puros e implementei lazy loading para componentes pesados. Desenvolvi um sistema de cache com atualizações otimistas para melhor experiência do usuário.
+---
 
 ## Funcionalidades
-Implementei a gestão completa de planos de ação com:
 
-+ Criação, edição e exclusão de planos
+### Gestão de Planos
 
-+ Adição e gestão de ações individuais
+- Criar, editar e excluir planos de ação
+- Criar, editar, excluir e mover ações no board
+- Cálculo automático de status do plano
 
-+ Transição de status das ações
+### Autenticação (Mock API)
 
-+ Cálculo automático do status do plano baseado nas ações
+- Cadastro com **nome, e-mail e senha**
+- Login com e-mail e senha
+- Logout com limpeza de sessão/cache
+- Persistência de sessão no LocalStorage (token fictício)
 
-+ Validação de formulários
+### Recuperação de Senha (Simulada)
 
-+ Interface responsiva e moderna
+- Fluxo de “esqueci minha senha” gerando token mock
+- Validação de token e redefinição de senha
+- Expiração/uso único do token simulados
 
-+ Feedback visual para todas as operações
+### Segurança Aplicada (mock com boas práticas)
 
-+ Tratamento de erros
+- Senha nunca salva em texto puro
+- Hash com `SHA-256` + salt por usuário
+- Validação de formato de e-mail
+- Validação de força da senha (8+, maiúscula, minúscula, número e símbolo)
+- Erro genérico no login: **"Credenciais inválidas"**
 
-## Decisões de Design
+### Multi-tenancy / Isolamento de Dados
 
-Criei um sistema de design consistente com cores semânticas e tipografia hierárquica. Implementei padrões de interação como modais contextuais e edição inline para melhor experiência do usuário.
+- Cada plano é persistido com `userId`
+- Consultas filtradas por usuário autenticado
+- Proteção de acesso cruzado entre contas
+- Query keys com escopo por usuário para evitar vazamento visual de cache
 
-Para tratamento de datas, desenvolvi um sistema baseado em timestamps para evitar problemas de fuso horário e garantir consistência nos dados.
+---
 
-As decisões técnicas foram tomadas visando escalabilidade, performance e manutenibilidade do código. Priorizei a criação de componentes reutilizáveis e uma arquitetura que facilite futuras expansões.
+## Estrutura de Persistência Mock
+
+No LocalStorage, a aplicação mantém “tabelas” simuladas:
+
+- `omd_users`
+- `omd_action_plans`
+- `omd_session`
+- `omd_password_reset_tokens`
+
+---
+
+## Rotas
+
+### Públicas
+
+- `/login`
+- `/register`
+- `/forgot-password`
+- `/reset-password`
+
+### Privadas
+
+- `/`
+- `/plans/$id/actions`
+
+Rotas privadas redirecionam para `/login` quando não há sessão válida.
+
+---
 
 ## Como Executar
 
-Para executar o projeto:
+```bash
+npm install
+npm run dev
+```
+
+Build de produção:
 
 ```bash
-bun install
-bun run dev
+npm run build
+```

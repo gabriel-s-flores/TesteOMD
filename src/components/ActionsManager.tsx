@@ -78,9 +78,6 @@ export const ActionsManager: React.FC<ActionsManagerProps> = ({
         description: data.description,
         deadline: deadlineTimestamp,
         status: "A Fazer",
-        actions: function (): unknown {
-          throw new Error("Function not implemented.");
-        },
       });
       reset({
         description: "",
@@ -184,10 +181,15 @@ export const ActionsManager: React.FC<ActionsManagerProps> = ({
 
   // Improved Drag and Drop handlers
   const handleDragStart = (e: React.DragEvent, actionId: string) => {
+    const dragElement = e.currentTarget as HTMLElement;
+
     e.dataTransfer.setData("text/plain", actionId);
     e.dataTransfer.effectAllowed = "move";
+
     setTimeout(() => {
-      e.currentTarget.classList.add("opacity-30", "scale-95");
+      if (dragElement?.isConnected) {
+        dragElement.classList.add("opacity-30", "scale-95");
+      }
     }, 0);
   };
 

@@ -1,4 +1,6 @@
+import { useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
+import { useAuth } from "../../context/AuthContext";
 import { useActionPlans } from "../../hooks/useActionPlans";
 import { useModal } from "../../hooks/useModal";
 import { useToast } from "../../hooks/useToast";
@@ -10,6 +12,8 @@ import { LoadingSpinner } from "../ui/LoadingSpinner";
 import { ToastContainer } from "../ui/ToastContainer";
 
 export function IndexComponent() {
+  const navigate = useNavigate();
+  const { user, logout } = useAuth();
   const {
     plans,
     isLoading,
@@ -29,6 +33,7 @@ export function IndexComponent() {
 
   const [selectedPlanId, setSelectedPlanId] = useState<string | null>(null);
   const [deletingPlanId, setDeletingPlanId] = useState<string | null>(null);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   const selectedPlan = selectedPlanId
     ? plans.find((plan) => plan.id === selectedPlanId)
@@ -101,16 +106,41 @@ export function IndexComponent() {
     return <LoadingSpinner />;
   }
 
+  const handleLogout = async () => {
+    setIsLoggingOut(true);
+    try {
+      await logout();
+      navigate({ to: "/login" });
+    } finally {
+      setIsLoggingOut(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <ToastContainer toasts={toasts} onRemoveToast={removeToast} />
 
       <div className="container mx-auto px-4">
-        <div className="flex justify-between items-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Planos de Ação</h1>
-          <Button variant="primary" size="lg" onClick={createModal.open}>
-            Novo Plano
-          </Button>
+        <div className="flex flex-col gap-4 md:flex-row md:justify-between md:items-center mb-8">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">Planos de Ação</h1>
+            <p className="text-gray-600 mt-1">
+              Logado como <span className="font-medium">{user?.name}</span> (
+              {user?.email})
+            </p>
+          </div>
+          <div className="flex gap-3">
+            <Button
+              variant="secondary"
+              onClick={handleLogout}
+              isLoading={isLoggingOut}
+            >
+              Sair
+            </Button>
+            <Button variant="primary" size="lg" onClick={createModal.open}>
+              Novo Plano
+            </Button>
+          </div>
         </div>
 
         <PlanList

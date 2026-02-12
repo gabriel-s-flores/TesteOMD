@@ -8,6 +8,7 @@ import React, {
   useMemo,
   useState,
 } from "react";
+import { queryKeys } from "../hooks/queryKeys";
 import { authService } from "../services/authService";
 import type { User } from "../types";
 
@@ -48,7 +49,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   const login = async (input: { email: string; password: string }) => {
     const result = await authService.login(input);
     setUser(result.user);
-    await queryClient.invalidateQueries();
+    await queryClient.invalidateQueries({
+      queryKey: queryKeys.actionPlansRoot,
+    });
+    await queryClient.invalidateQueries({ queryKey: queryKeys.plansRoot });
   };
 
   const register = async (input: {
@@ -58,7 +62,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   }) => {
     const result = await authService.register(input);
     setUser(result.user);
-    await queryClient.invalidateQueries();
+    await queryClient.invalidateQueries({
+      queryKey: queryKeys.actionPlansRoot,
+    });
+    await queryClient.invalidateQueries({ queryKey: queryKeys.plansRoot });
   };
 
   const logout = async () => {

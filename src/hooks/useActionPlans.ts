@@ -3,6 +3,7 @@ import { useCallback } from "react";
 import { useAuth } from "../context/AuthContext";
 import { mockApi } from "../services/mockApi";
 import type { Action, ActionPlan } from "../types";
+import { queryKeys } from "./queryKeys";
 import { useToast } from "./useToast";
 
 export const useActionPlans = () => {
@@ -11,7 +12,7 @@ export const useActionPlans = () => {
   const toast = useToast();
 
   const plansQuery = useQuery({
-    queryKey: ["actionPlans", user?.id],
+    queryKey: queryKeys.actionPlans(user?.id),
     queryFn: mockApi.getActionPlans,
     enabled: Boolean(user),
   });
@@ -38,7 +39,9 @@ export const useActionPlans = () => {
   const createPlanMutation = useMutation({
     mutationFn: mockApi.createActionPlan,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["actionPlans", user?.id] });
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.actionPlans(user?.id),
+      });
       onSuccess("Plano criado com sucesso!");
     },
     onError: () => onError("Erro ao criar plano"),
@@ -54,7 +57,7 @@ export const useActionPlans = () => {
     }) => mockApi.updateActionPlan(id, updates),
     onSuccess: (updatedPlan) => {
       queryClient.setQueryData(
-        ["actionPlans", user?.id],
+        queryKeys.actionPlans(user?.id),
         (old: ActionPlan[] | undefined) => {
           if (!old) return [updatedPlan];
           return old.map((plan) =>
@@ -70,7 +73,9 @@ export const useActionPlans = () => {
   const deletePlanMutation = useMutation({
     mutationFn: mockApi.deleteActionPlan,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["actionPlans", user?.id] });
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.actionPlans(user?.id),
+      });
       onSuccess("Plano excluído com sucesso!");
     },
     onError: () => onError("Erro ao excluir plano"),
@@ -89,7 +94,7 @@ export const useActionPlans = () => {
       refreshPlan(variables.planId).then((updatedPlan) => {
         if (updatedPlan) {
           queryClient.setQueryData(
-            ["actionPlans", user?.id],
+            queryKeys.actionPlans(user?.id),
             (old: ActionPlan[] | undefined) => {
               if (!old) return [updatedPlan];
               return old.map((plan) =>
@@ -129,7 +134,7 @@ export const useActionPlans = () => {
       refreshPlan(variables.planId).then((updatedPlan) => {
         if (updatedPlan) {
           queryClient.setQueryData(
-            ["actionPlans", user?.id],
+            queryKeys.actionPlans(user?.id),
             (old: ActionPlan[] | undefined) => {
               if (!old) return [updatedPlan];
               return old.map((plan) =>

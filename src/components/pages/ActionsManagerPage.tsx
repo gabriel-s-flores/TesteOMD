@@ -1,111 +1,42 @@
-import {
-  useMutation,
-  useQueryClient,
-  useSuspenseQuery,
-} from "@tanstack/react-query";
-import { useParams, useRouter } from "@tanstack/react-router";
+import { useRouter } from "@tanstack/react-router";
 import React from "react";
-import { useAuth } from "../../context/AuthContext";
-import { mockApi } from "../../services/mockApi";
+import { usePlanActions } from "../../hooks/usePlanActions";
 import type { Action } from "../../types";
 import { ActionsManager } from "../ActionsManager";
 import { Button } from "../ui/Button";
 import { Card, CardContent } from "../ui/Card";
 
 export const ActionsManagerPage: React.FC = () => {
-  const { id: planId } = useParams({ from: "/plans/$id/actions" });
   const router = useRouter();
-  const queryClient = useQueryClient();
-  const { user } = useAuth();
-
-  const userId = user?.id;
-
-  // Fetch the plan data
-  const {
-    data: plan,
-    isLoading,
-    error,
-  } = useSuspenseQuery({
-    queryKey: ["plan", userId, planId],
-    queryFn: () => mockApi.getActionPlan(planId),
-  });
-
-  // Mutation for adding action
-  const addActionMutation = useMutation({
-    mutationFn: (action: Omit<Action, "id">) =>
-      mockApi.addAction(planId, action),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["plan", userId, planId] });
-      queryClient.invalidateQueries({ queryKey: ["actionPlans", userId] });
-    },
-  });
-
-  // Mutation for updating action
-  const updateActionMutation = useMutation({
-    mutationFn: ({
-      actionId,
-      updates,
-    }: {
-      actionId: string;
-      updates: { deadline?: number; status?: Action["status"] };
-    }) => mockApi.updateAction(planId, actionId, updates),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["plan", userId, planId] });
-      queryClient.invalidateQueries({ queryKey: ["actionPlans", userId] });
-    },
-  });
+  const { plan, addAction, updateAction, editAction, deleteAction, isLoading } =
+    usePlanActions();
 
   const handleAddAction = async (action: Omit<Action, "id">) => {
-    await addActionMutation.mutateAsync(action);
+    await addAction(action);
   };
 
   const handleUpdateAction = async (
     actionId: string,
     updates: { deadline?: number; status?: Action["status"] },
   ) => {
-    await updateActionMutation.mutateAsync({ actionId, updates });
+    await updateAction({ actionId, updates });
   };
 
   const handleGoBack = () => {
     router.navigate({ to: "/" });
   };
 
-  const editActionMutation = useMutation({
-    mutationFn: ({
-      actionId,
-      updates,
-    }: {
-      actionId: string;
-      updates: { description: string; deadline: number };
-    }) => mockApi.updateActionDescriptionAndDeadline(planId, actionId, updates),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["plan", userId, planId] });
-      queryClient.invalidateQueries({ queryKey: ["actionPlans", userId] });
-    },
-  });
-
-  // Mutation to delete action
-  const deleteActionMutation = useMutation({
-    mutationFn: (actionId: string) => mockApi.deleteAction(planId, actionId),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["plan", userId, planId] });
-      queryClient.invalidateQueries({ queryKey: ["actionPlans", userId] });
-    },
-  });
-
   const handleEditAction = async (
     actionId: string,
     updates: { description: string; deadline: number },
   ) => {
-    await editActionMutation.mutateAsync({ actionId, updates });
+    await editAction({ actionId, updates });
   };
 
   const handleDeleteAction = async (actionId: string) => {
-    return await deleteActionMutation.mutateAsync(actionId);
+    return await deleteAction(actionId);
   };
 
-  if (isLoading) return <div>Loading...</div>;
-  if (error) return <div>Error: {error.message}</div>;
   if (!plan) return <div>Plan not found</div>;
 
   return (
@@ -135,12 +66,7 @@ export const ActionsManagerPage: React.FC = () => {
         onUpdateAction={handleUpdateAction}
         onEditAction={handleEditAction} // Agora recebe description E deadline
         onDeleteAction={handleDeleteAction}
-        isLoading={
-          addActionMutation.isPending ||
-          updateActionMutation.isPending ||
-          editActionMutation.isPending ||
-          deleteActionMutation.isPending
-        }
+        isLoading={isLoading}
       />
     </div>
   );

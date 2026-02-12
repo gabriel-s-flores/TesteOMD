@@ -1,6 +1,7 @@
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
+import { useTranslation } from "react-i18next";
 import { useAuth } from "../../context/AuthContext";
 import { isStrongPassword, isValidEmail } from "../../utils/security";
 import { Button } from "../ui/Button";
@@ -14,6 +15,7 @@ interface ResetPasswordFormData {
 }
 
 export const ResetPasswordPage = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { resetPassword } = useAuth();
   const [error, setError] = useState<string | null>(null);
@@ -38,9 +40,7 @@ export const ResetPasswordPage = () => {
         token: data.token,
         newPassword: data.newPassword,
       });
-      setSuccessMessage(
-        "Senha redefinida com sucesso. Você já pode fazer login.",
-      );
+      setSuccessMessage(t("auth.reset_password.success"));
       setTimeout(() => {
         navigate({ to: "/login" });
       }, 1200);
@@ -48,7 +48,7 @@ export const ResetPasswordPage = () => {
       setError(
         err instanceof Error
           ? err.message
-          : "Não foi possível redefinir senha.",
+          : t("auth.reset_password.errors.generic"),
       );
     }
   };
@@ -57,9 +57,11 @@ export const ResetPasswordPage = () => {
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
       <Card className="w-full max-w-md">
         <CardHeader>
-          <h1 className="text-2xl font-bold text-gray-900">Redefinir senha</h1>
+          <h1 className="text-2xl font-bold text-gray-900">
+            {t("auth.reset_password.title")}
+          </h1>
           <p className="text-gray-600 mt-1">
-            Informe e-mail, token e nova senha
+            {t("auth.reset_password.subtitle")}
           </p>
         </CardHeader>
         <CardContent>
@@ -69,7 +71,7 @@ export const ResetPasswordPage = () => {
                 className="block text-sm font-medium text-gray-700"
                 htmlFor="email"
               >
-                E-mail
+                {t("common.labels.email")}
               </label>
               <input
                 id="email"
@@ -77,9 +79,10 @@ export const ResetPasswordPage = () => {
                 autoComplete="email"
                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
                 {...register("email", {
-                  required: "E-mail é obrigatório",
+                  required: t("auth.reset_password.errors.email_required"),
                   validate: (value) =>
-                    isValidEmail(value) || "Formato de e-mail inválido",
+                    isValidEmail(value) ||
+                    t("auth.reset_password.errors.email_invalid"),
                 })}
               />
               {errors.email && (
@@ -94,7 +97,7 @@ export const ResetPasswordPage = () => {
                 className="block text-sm font-medium text-gray-700"
                 htmlFor="token"
               >
-                Token
+                {t("common.labels.token")}
               </label>
               <input
                 id="token"
@@ -102,8 +105,11 @@ export const ResetPasswordPage = () => {
                 autoComplete="one-time-code"
                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border uppercase"
                 {...register("token", {
-                  required: "Token é obrigatório",
-                  minLength: { value: 6, message: "Token inválido" },
+                  required: t("auth.reset_password.errors.token_required"),
+                  minLength: {
+                    value: 6,
+                    message: t("auth.reset_password.errors.token_invalid"),
+                  },
                 })}
               />
               {errors.token && (
@@ -118,7 +124,7 @@ export const ResetPasswordPage = () => {
                 className="block text-sm font-medium text-gray-700"
                 htmlFor="newPassword"
               >
-                Nova senha
+                {t("auth.reset_password.new_password")}
               </label>
               <input
                 id="newPassword"
@@ -126,10 +132,12 @@ export const ResetPasswordPage = () => {
                 autoComplete="new-password"
                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
                 {...register("newPassword", {
-                  required: "Nova senha é obrigatória",
+                  required: t(
+                    "auth.reset_password.errors.new_password_required",
+                  ),
                   validate: (value) =>
                     isStrongPassword(value) ||
-                    "Use 8+ caracteres com maiúscula, minúscula, número e símbolo",
+                    t("auth.reset_password.errors.password_weak"),
                 })}
               />
               {errors.newPassword && (
@@ -144,7 +152,7 @@ export const ResetPasswordPage = () => {
                 className="block text-sm font-medium text-gray-700"
                 htmlFor="confirmPassword"
               >
-                Confirmar nova senha
+                {t("auth.reset_password.confirm_new_password")}
               </label>
               <input
                 id="confirmPassword"
@@ -152,9 +160,10 @@ export const ResetPasswordPage = () => {
                 autoComplete="new-password"
                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
                 {...register("confirmPassword", {
-                  required: "Confirmação é obrigatória",
+                  required: t("auth.reset_password.errors.confirm_required"),
                   validate: (value) =>
-                    value === passwordValue || "As senhas não coincidem",
+                    value === passwordValue ||
+                    t("auth.reset_password.errors.password_mismatch"),
                 })}
               />
               {errors.confirmPassword && (
@@ -175,7 +184,7 @@ export const ResetPasswordPage = () => {
               className="w-full"
               isLoading={isSubmitting}
             >
-              Redefinir senha
+              {t("common.buttons.reset_password")}
             </Button>
 
             <div className="text-sm text-center text-gray-600 space-y-1">
@@ -184,12 +193,12 @@ export const ResetPasswordPage = () => {
                   className="text-blue-600 hover:underline"
                   to="/forgot-password"
                 >
-                  Gerar novo token
+                  {t("auth.reset_password.new_token")}
                 </Link>
               </p>
               <p>
                 <Link className="text-blue-600 hover:underline" to="/login">
-                  Voltar ao login
+                  {t("auth.reset_password.back_to_login")}
                 </Link>
               </p>
             </div>

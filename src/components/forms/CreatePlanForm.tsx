@@ -1,5 +1,6 @@
 import React from "react";
 import { useForm } from "react-hook-form";
+import { useTranslation } from "react-i18next";
 import type { ActionPlan } from "../../types";
 import { Button } from "../ui/Button";
 
@@ -21,6 +22,8 @@ export const CreatePlanForm: React.FC<CreatePlanFormProps> = ({
   isLoading = false,
   initialData,
 }) => {
+  const { t } = useTranslation();
+
   const {
     register,
     handleSubmit,
@@ -47,15 +50,15 @@ export const CreatePlanForm: React.FC<CreatePlanFormProps> = ({
           htmlFor="title"
           className="block text-sm font-medium text-gray-700"
         >
-          Título
+          {t("plans.form.title")}
         </label>
         <input
           type="text"
           id="title"
           className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
           {...register("title", {
-            required: "Título é obrigatório",
-            minLength: { value: 3, message: "Mínimo 3 caracteres" },
+            required: t("plans.form.errors.title_required"),
+            minLength: { value: 3, message: t("plans.form.errors.title_min") },
           })}
         />
         {errors.title && (
@@ -68,15 +71,18 @@ export const CreatePlanForm: React.FC<CreatePlanFormProps> = ({
           htmlFor="objective"
           className="block text-sm font-medium text-gray-700"
         >
-          Objetivo
+          {t("plans.form.objective")}
         </label>
         <textarea
           id="objective"
           rows={3}
           className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
           {...register("objective", {
-            required: "Objetivo é obrigatório",
-            minLength: { value: 10, message: "Mínimo 10 caracteres" },
+            required: t("plans.form.errors.objective_required"),
+            minLength: {
+              value: 10,
+              message: t("plans.form.errors.objective_min"),
+            },
           })}
         />
         {errors.objective && (
@@ -93,10 +99,12 @@ export const CreatePlanForm: React.FC<CreatePlanFormProps> = ({
           onClick={onCancel}
           disabled={isLoading}
         >
-          Cancelar
+          {t("common.buttons.cancel")}
         </Button>
         <Button type="submit" variant="primary" isLoading={isLoading}>
-          {initialData ? "Atualizar" : "Criar"} Plano
+          {initialData
+            ? t("plans.form.submit_update")
+            : t("plans.form.submit_create")}
         </Button>
       </div>
     </form>

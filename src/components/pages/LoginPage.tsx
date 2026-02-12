@@ -1,6 +1,7 @@
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
+import { useTranslation } from "react-i18next";
 import { useAuth } from "../../context/AuthContext";
 import { isValidEmail } from "../../utils/security";
 import { Button } from "../ui/Button";
@@ -12,6 +13,7 @@ interface LoginFormData {
 }
 
 export const LoginPage = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { login } = useAuth();
   const [error, setError] = useState<string | null>(null);
@@ -28,7 +30,7 @@ export const LoginPage = () => {
       await login(data);
       navigate({ to: "/" });
     } catch {
-      setError("Credenciais inválidas");
+      setError(t("auth.login.errors.invalid_credentials"));
     }
   };
 
@@ -36,8 +38,10 @@ export const LoginPage = () => {
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
       <Card className="w-full max-w-md">
         <CardHeader>
-          <h1 className="text-2xl font-bold text-gray-900">Entrar</h1>
-          <p className="text-gray-600 mt-1">Acesse sua conta para continuar</p>
+          <h1 className="text-2xl font-bold text-gray-900">
+            {t("auth.login.title")}
+          </h1>
+          <p className="text-gray-600 mt-1">{t("auth.login.subtitle")}</p>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
@@ -46,7 +50,7 @@ export const LoginPage = () => {
                 className="block text-sm font-medium text-gray-700"
                 htmlFor="email"
               >
-                E-mail
+                {t("common.labels.email")}
               </label>
               <input
                 id="email"
@@ -54,9 +58,9 @@ export const LoginPage = () => {
                 autoComplete="username"
                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
                 {...register("email", {
-                  required: "E-mail é obrigatório",
+                  required: t("auth.login.errors.email_required"),
                   validate: (value) =>
-                    isValidEmail(value) || "Formato de e-mail inválido",
+                    isValidEmail(value) || t("auth.login.errors.email_invalid"),
                 })}
               />
               {errors.email && (
@@ -71,7 +75,7 @@ export const LoginPage = () => {
                 className="block text-sm font-medium text-gray-700"
                 htmlFor="password"
               >
-                Senha
+                {t("common.labels.password")}
               </label>
               <input
                 id="password"
@@ -79,7 +83,7 @@ export const LoginPage = () => {
                 autoComplete="current-password"
                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
                 {...register("password", {
-                  required: "Senha é obrigatória",
+                  required: t("auth.login.errors.password_required"),
                 })}
               />
               {errors.password && (
@@ -97,14 +101,14 @@ export const LoginPage = () => {
               className="w-full"
               isLoading={isSubmitting}
             >
-              Entrar
+              {t("common.buttons.login")}
             </Button>
 
             <div className="text-sm text-center text-gray-600 space-y-1">
               <p>
-                Não tem conta?{" "}
+                {t("auth.login.no_account")}{" "}
                 <Link className="text-blue-600 hover:underline" to="/register">
-                  Criar conta
+                  {t("auth.login.create_account")}
                 </Link>
               </p>
               <p>
@@ -112,7 +116,7 @@ export const LoginPage = () => {
                   className="text-blue-600 hover:underline"
                   to="/forgot-password"
                 >
-                  Esqueci minha senha
+                  {t("auth.login.forgot_password")}
                 </Link>
               </p>
             </div>

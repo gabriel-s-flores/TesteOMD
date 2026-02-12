@@ -1,5 +1,6 @@
 import { useRouter } from "@tanstack/react-router";
 import React from "react";
+import { useTranslation } from "react-i18next";
 import { usePlanActions } from "../../hooks/usePlanActions";
 import type { Action } from "../../types";
 import { ActionsManager } from "../ActionsManager";
@@ -7,6 +8,7 @@ import { Button } from "../ui/Button";
 import { Card, CardContent } from "../ui/Card";
 
 export const ActionsManagerPage: React.FC = () => {
+  const { t } = useTranslation();
   const router = useRouter();
   const { plan, addAction, updateAction, editAction, deleteAction, isLoading } =
     usePlanActions();
@@ -37,7 +39,7 @@ export const ActionsManagerPage: React.FC = () => {
     return await deleteAction(actionId);
   };
 
-  if (!plan) return <div>Plan not found</div>;
+  if (!plan) return <div>{t("actions.page.not_found")}</div>;
 
   return (
     <div className="container mx-auto py-6 space-y-6">
@@ -46,14 +48,14 @@ export const ActionsManagerPage: React.FC = () => {
         <CardContent className="pt-6">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-2xl font-bold">Gerenciar Ações</h1>
+              <h1 className="text-2xl font-bold">{t("actions.page.title")}</h1>
               <p className="text-gray-600 mt-1">{plan.title}</p>
               {plan.objective && (
                 <p className="text-gray-500 text-sm mt-1">{plan.objective}</p>
               )}
             </div>
             <Button variant="secondary" onClick={handleGoBack}>
-              Voltar para Planos
+              {t("actions.page.back_to_plans")}
             </Button>
           </div>
         </CardContent>

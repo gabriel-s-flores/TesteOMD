@@ -3,6 +3,7 @@ import { RouterProvider, createRouter } from "@tanstack/react-router";
 import React from "react";
 import ReactDOM from "react-dom/client";
 import { AuthProvider } from "./context/AuthContext";
+import "./i18n";
 import "./index.css";
 import { routeTree } from "./routeTree.gen";
 

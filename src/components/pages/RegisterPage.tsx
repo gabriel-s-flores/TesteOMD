@@ -1,6 +1,7 @@
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
+import { useTranslation } from "react-i18next";
 import { useAuth } from "../../context/AuthContext";
 import { isStrongPassword, isValidEmail } from "../../utils/security";
 import { Button } from "../ui/Button";
@@ -14,6 +15,7 @@ interface RegisterFormData {
 }
 
 export const RegisterPage = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { register: registerUser } = useAuth();
   const [error, setError] = useState<string | null>(null);
@@ -40,7 +42,7 @@ export const RegisterPage = () => {
       navigate({ to: "/" });
     } catch (err) {
       setError(
-        err instanceof Error ? err.message : "Não foi possível registrar.",
+        err instanceof Error ? err.message : t("auth.register.errors.generic"),
       );
     }
   };
@@ -49,10 +51,10 @@ export const RegisterPage = () => {
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
       <Card className="w-full max-w-md">
         <CardHeader>
-          <h1 className="text-2xl font-bold text-gray-900">Criar conta</h1>
-          <p className="text-gray-600 mt-1">
-            Cadastre-se para acessar seus planos
-          </p>
+          <h1 className="text-2xl font-bold text-gray-900">
+            {t("auth.register.title")}
+          </h1>
+          <p className="text-gray-600 mt-1">{t("auth.register.subtitle")}</p>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
@@ -61,7 +63,7 @@ export const RegisterPage = () => {
                 className="block text-sm font-medium text-gray-700"
                 htmlFor="name"
               >
-                Nome
+                {t("common.labels.name")}
               </label>
               <input
                 id="name"
@@ -69,8 +71,11 @@ export const RegisterPage = () => {
                 autoComplete="name"
                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
                 {...register("name", {
-                  required: "Nome é obrigatório",
-                  minLength: { value: 2, message: "Mínimo 2 caracteres" },
+                  required: t("auth.register.errors.name_required"),
+                  minLength: {
+                    value: 2,
+                    message: t("auth.register.errors.name_min"),
+                  },
                 })}
               />
               {errors.name && (
@@ -85,7 +90,7 @@ export const RegisterPage = () => {
                 className="block text-sm font-medium text-gray-700"
                 htmlFor="email"
               >
-                E-mail
+                {t("common.labels.email")}
               </label>
               <input
                 id="email"
@@ -93,9 +98,10 @@ export const RegisterPage = () => {
                 autoComplete="email"
                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
                 {...register("email", {
-                  required: "E-mail é obrigatório",
+                  required: t("auth.register.errors.email_required"),
                   validate: (value) =>
-                    isValidEmail(value) || "Formato de e-mail inválido",
+                    isValidEmail(value) ||
+                    t("auth.register.errors.email_invalid"),
                 })}
               />
               {errors.email && (
@@ -110,7 +116,7 @@ export const RegisterPage = () => {
                 className="block text-sm font-medium text-gray-700"
                 htmlFor="password"
               >
-                Senha
+                {t("common.labels.password")}
               </label>
               <input
                 id="password"
@@ -118,10 +124,10 @@ export const RegisterPage = () => {
                 autoComplete="new-password"
                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
                 {...register("password", {
-                  required: "Senha é obrigatória",
+                  required: t("auth.register.errors.password_required"),
                   validate: (value) =>
                     isStrongPassword(value) ||
-                    "Use 8+ caracteres com maiúscula, minúscula, número e símbolo",
+                    t("auth.register.errors.password_weak"),
                 })}
               />
               {errors.password && (
@@ -136,7 +142,7 @@ export const RegisterPage = () => {
                 className="block text-sm font-medium text-gray-700"
                 htmlFor="confirmPassword"
               >
-                Confirmar senha
+                {t("auth.register.confirm_password")}
               </label>
               <input
                 id="confirmPassword"
@@ -144,9 +150,10 @@ export const RegisterPage = () => {
                 autoComplete="new-password"
                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
                 {...register("confirmPassword", {
-                  required: "Confirmação é obrigatória",
+                  required: t("auth.register.errors.confirm_required"),
                   validate: (value) =>
-                    value === passwordValue || "As senhas não coincidem",
+                    value === passwordValue ||
+                    t("auth.register.errors.password_mismatch"),
                 })}
               />
               {errors.confirmPassword && (
@@ -164,13 +171,13 @@ export const RegisterPage = () => {
               className="w-full"
               isLoading={isSubmitting}
             >
-              Criar conta
+              {t("common.buttons.register")}
             </Button>
 
             <p className="text-sm text-center text-gray-600">
-              Já possui conta?{" "}
+              {t("auth.register.have_account")}{" "}
               <Link className="text-blue-600 hover:underline" to="/login">
-                Entrar
+                {t("common.buttons.login")}
               </Link>
             </p>
           </form>

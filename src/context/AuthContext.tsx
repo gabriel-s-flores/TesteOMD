@@ -10,6 +10,7 @@ import React, {
   useState,
 } from "react";
 import { queryKeys } from "../hooks/queryKeys";
+import i18n from "../i18n";
 import { authService } from "../services/authService";
 import type { User } from "../types";
 
@@ -116,7 +117,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {
-    throw new Error("useAuth deve ser usado dentro de AuthProvider.");
+    throw new Error(i18n.t("errors.use_auth_inside_provider"));
   }
 
   return context;

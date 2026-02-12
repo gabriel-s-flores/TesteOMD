@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import type { ActionPlan } from "../../types";
 import { Card, CardContent } from "../ui/Card";
 import { PlanCard } from "./PlanCard";
@@ -17,13 +18,13 @@ export const PlanList = ({
   isDeleting,
   deletingPlanId,
 }: PlanListProps) => {
+  const { t } = useTranslation();
+
   if (plans.length === 0) {
     return (
       <Card>
         <CardContent className="text-center py-12">
-          <p className="text-gray-500 text-lg">
-            Nenhum plano de ação encontrado. Crie seu primeiro plano!
-          </p>
+          <p className="text-gray-500 text-lg">{t("plans.list.empty")}</p>
         </CardContent>
       </Card>
     );

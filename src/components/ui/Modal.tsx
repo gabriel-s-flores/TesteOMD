@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 interface ModalProps {
   isOpen: boolean;
@@ -17,6 +18,7 @@ export const Modal: React.FC<ModalProps> = ({
   size = "md",
   backdropOpacity = "medium",
 }) => {
+  const { t } = useTranslation();
   const [isVisible, setIsVisible] = useState(false);
   const [shouldRender, setShouldRender] = useState(false);
 
@@ -86,7 +88,7 @@ export const Modal: React.FC<ModalProps> = ({
           <button
             onClick={onClose}
             className="text-gray-400 hover:text-gray-600 transition-colors rounded-full hover:bg-gray-100 w-8 h-8 flex items-center justify-center transition-transform duration-200 hover:scale-110 active:scale-95"
-            aria-label="Fechar modal"
+            aria-label={t("modal.close_aria_label")}
           >
             <span className="text-2xl leading-none">&times;</span>
           </button>

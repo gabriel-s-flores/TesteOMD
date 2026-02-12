@@ -1,3 +1,4 @@
+import i18n from "../i18n";
 import type { Action, ActionPlan } from "../types";
 import { calculatePlanStatus } from "../utils/planStatusCalculator";
 import { authService } from "./authService";
@@ -27,7 +28,7 @@ const saveUpdatedPlan = (updatedPlan: ActionPlan) => {
   const index = allPlans.findIndex((plan) => plan.id === updatedPlan.id);
 
   if (index === -1) {
-    throw new Error("Plano não encontrado");
+    throw new Error(i18n.t("services.plan_not_found"));
   }
 
   allPlans[index] = {
@@ -78,7 +79,7 @@ export const mockApi = {
   ): Promise<ActionPlan> {
     await delay(500);
     const plan = readPlansForCurrentUser().find((item) => item.id === id);
-    if (!plan) throw new Error("Plano não encontrado");
+    if (!plan) throw new Error(i18n.t("services.plan_not_found"));
 
     const updatedPlan = {
       ...plan,
@@ -106,7 +107,7 @@ export const mockApi = {
   async addAction(planId: string, action: Omit<Action, "id">): Promise<Action> {
     await delay(500);
     const plan = readPlansForCurrentUser().find((item) => item.id === planId);
-    if (!plan) throw new Error("Plano não encontrado");
+    if (!plan) throw new Error(i18n.t("services.plan_not_found"));
 
     const newAction: Action = {
       ...action,
@@ -133,10 +134,11 @@ export const mockApi = {
   ): Promise<Action> {
     await delay(500);
     const plan = readPlansForCurrentUser().find((item) => item.id === planId);
-    if (!plan) throw new Error("Plano não encontrado");
+    if (!plan) throw new Error(i18n.t("services.plan_not_found"));
 
     const actionIndex = plan.actions.findIndex((a) => a.id === actionId);
-    if (actionIndex === -1) throw new Error("Ação não encontrada");
+    if (actionIndex === -1)
+      throw new Error(i18n.t("services.action_not_found"));
 
     const updatedActions = [...plan.actions];
     updatedActions[actionIndex] = {
@@ -162,10 +164,11 @@ export const mockApi = {
   ): Promise<Action> {
     await delay(500);
     const plan = readPlansForCurrentUser().find((item) => item.id === planId);
-    if (!plan) throw new Error("Plano não encontrado");
+    if (!plan) throw new Error(i18n.t("services.plan_not_found"));
 
     const actionIndex = plan.actions.findIndex((a) => a.id === actionId);
-    if (actionIndex === -1) throw new Error("Ação não encontrada");
+    if (actionIndex === -1)
+      throw new Error(i18n.t("services.action_not_found"));
 
     const updatedActions = [...plan.actions];
     updatedActions[actionIndex] = {
@@ -186,7 +189,7 @@ export const mockApi = {
   async deleteAction(planId: string, actionId: string): Promise<void> {
     await delay(500);
     const plan = readPlansForCurrentUser().find((item) => item.id === planId);
-    if (!plan) throw new Error("Plano não encontrado");
+    if (!plan) throw new Error(i18n.t("services.plan_not_found"));
 
     const filteredActions = plan.actions.filter((a) => a.id !== actionId);
 
@@ -206,10 +209,11 @@ export const mockApi = {
   ): Promise<Action> {
     await delay(500);
     const plan = readPlansForCurrentUser().find((item) => item.id === planId);
-    if (!plan) throw new Error("Plano não encontrado");
+    if (!plan) throw new Error(i18n.t("services.plan_not_found"));
 
     const actionIndex = plan.actions.findIndex((a) => a.id === actionId);
-    if (actionIndex === -1) throw new Error("Ação não encontrada");
+    if (actionIndex === -1)
+      throw new Error(i18n.t("services.action_not_found"));
 
     const updatedActions = [...plan.actions];
     updatedActions[actionIndex] = {

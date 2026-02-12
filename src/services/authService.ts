@@ -1,3 +1,4 @@
+import i18n from "../i18n";
 import type { Session, User } from "../types";
 import {
   generateFakeJwt,
@@ -89,23 +90,21 @@ export const authService = {
     const email = input.email.trim().toLowerCase();
 
     if (name.length < 2) {
-      throw new Error("Nome deve ter ao menos 2 caracteres.");
+      throw new Error(i18n.t("auth.services.name_min"));
     }
 
     if (!isValidEmail(email)) {
-      throw new Error("Informe um e-mail válido.");
+      throw new Error(i18n.t("auth.services.email_invalid"));
     }
 
     if (!isStrongPassword(input.password)) {
-      throw new Error(
-        "Senha fraca. Use ao menos 8 caracteres com maiúscula, minúscula, número e símbolo.",
-      );
+      throw new Error(i18n.t("auth.services.weak_password"));
     }
 
     const users = mockDb.getUsers();
     const alreadyExists = users.some((user) => user.email === email);
     if (alreadyExists) {
-      throw new Error("E-mail já cadastrado.");
+      throw new Error(i18n.t("auth.services.email_exists"));
     }
 
     const salt = generateSalt();
@@ -138,12 +137,12 @@ export const authService = {
     const user = users.find((item) => item.email === email);
 
     if (!user) {
-      throw new Error("Credenciais inválidas");
+      throw new Error(i18n.t("auth.services.invalid_credentials"));
     }
 
     const candidateHash = await hashPassword(input.password, user.salt);
     if (candidateHash !== user.passwordHash) {
-      throw new Error("Credenciais inválidas");
+      throw new Error(i18n.t("auth.services.invalid_credentials"));
     }
 
     const session = createSession(user.id);
@@ -174,7 +173,7 @@ export const authService = {
 
     const email = emailInput.trim().toLowerCase();
     if (!isValidEmail(email)) {
-      throw new Error("Informe um e-mail válido.");
+      throw new Error(i18n.t("auth.services.email_invalid"));
     }
 
     const users = mockDb.getUsers();
@@ -210,19 +209,17 @@ export const authService = {
 
     const email = input.email.trim().toLowerCase();
     if (!isValidEmail(email)) {
-      throw new Error("Informe um e-mail válido.");
+      throw new Error(i18n.t("auth.services.email_invalid"));
     }
 
     if (!isStrongPassword(input.newPassword)) {
-      throw new Error(
-        "Senha fraca. Use ao menos 8 caracteres com maiúscula, minúscula, número e símbolo.",
-      );
+      throw new Error(i18n.t("auth.services.weak_password"));
     }
 
     const users = mockDb.getUsers();
     const userIndex = users.findIndex((user) => user.email === email);
     if (userIndex === -1) {
-      throw new Error("Token inválido ou expirado.");
+      throw new Error(i18n.t("auth.services.token_invalid_or_expired"));
     }
 
     const providedHash = await hashValue(input.token.trim().toUpperCase());
@@ -236,7 +233,7 @@ export const authService = {
     );
 
     if (tokenIndex === -1) {
-      throw new Error("Token inválido ou expirado.");
+      throw new Error(i18n.t("auth.services.token_invalid_or_expired"));
     }
 
     const salt = generateSalt();
@@ -257,7 +254,7 @@ export const authService = {
   getCurrentUserOrThrow(): User {
     const user = getCurrentUserSync();
     if (!user) {
-      throw new Error("Sessão inválida. Faça login novamente.");
+      throw new Error(i18n.t("auth.services.invalid_session"));
     }
 
     return user;

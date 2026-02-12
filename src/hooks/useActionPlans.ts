@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useCallback } from "react";
 import { useAuth } from "../context/AuthContext";
+import i18n from "../i18n";
 import { mockApi } from "../services/mockApi";
 import type { Action, ActionPlan } from "../types";
 import { queryKeys } from "./queryKeys";
@@ -31,7 +32,7 @@ export const useActionPlans = () => {
 
   const onError = useCallback(
     (message: string) => {
-      toast.error(message, "Tente novamente mais tarde.");
+      toast.error(message, i18n.t("common.errors.try_again_later"));
     },
     [toast],
   );
@@ -42,9 +43,9 @@ export const useActionPlans = () => {
       queryClient.invalidateQueries({
         queryKey: queryKeys.actionPlans(user?.id),
       });
-      onSuccess("Plano criado com sucesso!");
+      onSuccess(i18n.t("dashboard.toasts.plan_created"));
     },
-    onError: () => onError("Erro ao criar plano"),
+    onError: () => onError(i18n.t("dashboard.toasts.plan_create_error")),
   });
 
   const updatePlanMutation = useMutation({
@@ -65,9 +66,9 @@ export const useActionPlans = () => {
           );
         },
       );
-      onSuccess("Plano atualizado com sucesso!");
+      onSuccess(i18n.t("dashboard.toasts.plan_updated"));
     },
-    onError: () => onError("Erro ao atualizar plano"),
+    onError: () => onError(i18n.t("dashboard.toasts.plan_update_error")),
   });
 
   const deletePlanMutation = useMutation({
@@ -76,9 +77,9 @@ export const useActionPlans = () => {
       queryClient.invalidateQueries({
         queryKey: queryKeys.actionPlans(user?.id),
       });
-      onSuccess("Plano excluído com sucesso!");
+      onSuccess(i18n.t("dashboard.toasts.plan_deleted"));
     },
-    onError: () => onError("Erro ao excluir plano"),
+    onError: () => onError(i18n.t("dashboard.toasts.plan_delete_error")),
   });
 
   const addActionMutation = useMutation({
@@ -104,9 +105,9 @@ export const useActionPlans = () => {
           );
         }
       });
-      onSuccess("Ação adicionada com sucesso!");
+      onSuccess(i18n.t("actions.toasts.action_added"));
     },
-    onError: () => onError("Erro ao adicionar ação"),
+    onError: () => onError(i18n.t("actions.toasts.action_add_error")),
   });
 
   const updateActionMutation = useMutation({
@@ -144,9 +145,9 @@ export const useActionPlans = () => {
           );
         }
       });
-      onSuccess("Ação atualizada com sucesso!");
+      onSuccess(i18n.t("actions.toasts.action_updated"));
     },
-    onError: () => onError("Erro ao atualizar ação"),
+    onError: () => onError(i18n.t("actions.toasts.action_update_error")),
   });
 
   return {

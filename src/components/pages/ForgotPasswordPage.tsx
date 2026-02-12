@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
+import { useTranslation } from "react-i18next";
 import { useAuth } from "../../context/AuthContext";
 import { isValidEmail } from "../../utils/security";
 import { Button } from "../ui/Button";
@@ -11,6 +12,7 @@ interface ForgotPasswordFormData {
 }
 
 export const ForgotPasswordPage = () => {
+  const { t } = useTranslation();
   const { requestPasswordReset } = useAuth();
   const [message, setMessage] = useState<string | null>(null);
   const [token, setToken] = useState<string | null>(null);
@@ -29,15 +31,15 @@ export const ForgotPasswordPage = () => {
 
     try {
       const result = await requestPasswordReset(data.email);
-      setMessage(
-        "Se o e-mail existir, um token de recuperação foi gerado com sucesso.",
-      );
+      setMessage(t("auth.forgot_password.success"));
       if (result.token) {
         setToken(result.token);
       }
     } catch (err) {
       setError(
-        err instanceof Error ? err.message : "Não foi possível enviar token.",
+        err instanceof Error
+          ? err.message
+          : t("auth.forgot_password.errors.generic"),
       );
     }
   };
@@ -46,9 +48,11 @@ export const ForgotPasswordPage = () => {
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
       <Card className="w-full max-w-md">
         <CardHeader>
-          <h1 className="text-2xl font-bold text-gray-900">Recuperar senha</h1>
+          <h1 className="text-2xl font-bold text-gray-900">
+            {t("auth.forgot_password.title")}
+          </h1>
           <p className="text-gray-600 mt-1">
-            Informe seu e-mail para gerar um token
+            {t("auth.forgot_password.subtitle")}
           </p>
         </CardHeader>
         <CardContent>
@@ -58,7 +62,7 @@ export const ForgotPasswordPage = () => {
                 className="block text-sm font-medium text-gray-700"
                 htmlFor="email"
               >
-                E-mail
+                {t("common.labels.email")}
               </label>
               <input
                 id="email"
@@ -66,9 +70,10 @@ export const ForgotPasswordPage = () => {
                 autoComplete="email"
                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
                 {...register("email", {
-                  required: "E-mail é obrigatório",
+                  required: t("auth.forgot_password.errors.email_required"),
                   validate: (value) =>
-                    isValidEmail(value) || "Formato de e-mail inválido",
+                    isValidEmail(value) ||
+                    t("auth.forgot_password.errors.email_invalid"),
                 })}
               />
               {errors.email && (
@@ -82,7 +87,8 @@ export const ForgotPasswordPage = () => {
             {token && (
               <div className="rounded-md border border-blue-200 bg-blue-50 p-3">
                 <p className="text-sm text-blue-800">
-                  <strong>Token (simulação):</strong> {token}
+                  <strong>{t("auth.forgot_password.token_simulation")}</strong>{" "}
+                  {token}
                 </p>
               </div>
             )}
@@ -94,7 +100,7 @@ export const ForgotPasswordPage = () => {
               className="w-full"
               isLoading={isSubmitting}
             >
-              Gerar token
+              {t("common.buttons.generate_token")}
             </Button>
 
             <div className="text-sm text-center text-gray-600 space-y-1">
@@ -103,12 +109,12 @@ export const ForgotPasswordPage = () => {
                   className="text-blue-600 hover:underline"
                   to="/reset-password"
                 >
-                  Já tem token? Redefinir senha
+                  {t("auth.forgot_password.has_token")}
                 </Link>
               </p>
               <p>
                 <Link className="text-blue-600 hover:underline" to="/login">
-                  Voltar ao login
+                  {t("auth.forgot_password.back_to_login")}
                 </Link>
               </p>
             </div>

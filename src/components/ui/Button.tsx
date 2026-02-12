@@ -1,4 +1,5 @@
 import React from "react";
+import { useTranslation } from "react-i18next";
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: "primary" | "secondary" | "danger";
@@ -16,6 +17,7 @@ export const Button = React.memo<ButtonProps>(
     disabled,
     ...props
   }) => {
+    const { t } = useTranslation();
     const baseClasses =
       "rounded font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2";
 
@@ -38,7 +40,7 @@ export const Button = React.memo<ButtonProps>(
 
     return (
       <button className={classes} disabled={disabled || isLoading} {...props}>
-        {isLoading ? "Carregando..." : children}
+        {isLoading ? t("common.status.loading") : children}
       </button>
     );
   },

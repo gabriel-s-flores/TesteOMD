@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import type { ActionPlan } from "../../types";
 import { CreatePlanForm } from "../forms/CreatePlanForm";
 import { Modal } from "../ui/Modal";
@@ -31,13 +32,15 @@ export const ModalManager = ({
   isCreatingPlan,
   isUpdatingPlan,
 }: ModalManagerProps) => {
+  const { t } = useTranslation();
+
   return (
     <>
       {/* Create Plan Modal */}
       <Modal
         isOpen={createModal.isOpen}
         onClose={createModal.close}
-        title="Criar Plano de Ação"
+        title={t("plans.modal.create_title")}
       >
         <CreatePlanForm
           onSubmit={onCreatePlan}
@@ -50,7 +53,7 @@ export const ModalManager = ({
       <Modal
         isOpen={editModal.isOpen}
         onClose={editModal.close}
-        title="Editar Plano de Ação"
+        title={t("plans.modal.edit_title")}
       >
         {selectedPlan && (
           <CreatePlanForm

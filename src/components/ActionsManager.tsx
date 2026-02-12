@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
+import { useTranslation } from "react-i18next";
 import type { Action, ActionPlan } from "../types";
 import {
   createFutureTimestamp,
@@ -38,6 +39,7 @@ export const ActionsManager: React.FC<ActionsManagerProps> = ({
   onEditAction,
   onDeleteAction,
 }) => {
+  const { t } = useTranslation();
   const defaultDeadline = timestampToDatetimeLocal(createFutureTimestamp());
 
   const {
@@ -85,7 +87,7 @@ export const ActionsManager: React.FC<ActionsManagerProps> = ({
       });
       setIsActionModalOpen(false);
     } catch (error) {
-      console.error("Erro ao adicionar ação:", error);
+      console.error(t("actions.manager.errors.add"), error);
     }
   };
 
@@ -103,7 +105,7 @@ export const ActionsManager: React.FC<ActionsManagerProps> = ({
       setIsActionModalOpen(false);
       setEditingAction(null);
     } catch (error) {
-      console.error("Erro ao editar ação:", error);
+      console.error(t("actions.manager.errors.edit"), error);
     }
   };
 
@@ -155,7 +157,7 @@ export const ActionsManager: React.FC<ActionsManagerProps> = ({
         });
       }
     } catch (error) {
-      console.error("Erro ao atualizar status:", error);
+      console.error(t("actions.manager.errors.status"), error);
       // Revert optimistic update on error
       setOptimisticActions(plan.actions);
     } finally {
@@ -165,7 +167,7 @@ export const ActionsManager: React.FC<ActionsManagerProps> = ({
 
   // Function to delete action
   const handleDeleteAction = async (actionId: string) => {
-    if (!window.confirm("Tem certeza que deseja excluir esta ação?")) {
+    if (!window.confirm(t("actions.manager.confirm_delete"))) {
       return;
     }
 
@@ -173,7 +175,7 @@ export const ActionsManager: React.FC<ActionsManagerProps> = ({
     try {
       await onDeleteAction(actionId);
     } catch (error) {
-      console.error("Erro ao excluir ação:", error);
+      console.error(t("actions.manager.errors.delete"), error);
     } finally {
       setUpdatingActions((prev) => ({ ...prev, [actionId]: false }));
     }
@@ -284,6 +286,19 @@ export const ActionsManager: React.FC<ActionsManagerProps> = ({
     }
   };
 
+  const getStatusLabel = (status: Action["status"]) => {
+    switch (status) {
+      case "A Fazer":
+        return t("actions.manager.status.todo");
+      case "Fazendo":
+        return t("actions.manager.status.doing");
+      case "Feita":
+        return t("actions.manager.status.done");
+      default:
+        return status;
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* Botão para adicionar nova ação */}
@@ -291,13 +306,17 @@ export const ActionsManager: React.FC<ActionsManagerProps> = ({
         <CardContent className="pt-6">
           <div className="flex justify-between items-center">
             <div>
-              <h3 className="text-lg font-semibold">Ações do Plano</h3>
+              <h3 className="text-lg font-semibold">
+                {t("actions.manager.title")}
+              </h3>
               <p className="text-gray-600 text-sm">
-                Total de {optimisticActions.length} ações
+                {t("actions.manager.total", {
+                  count: optimisticActions.length,
+                })}
               </p>
             </div>
             <Button variant="primary" onClick={openAddActionModal}>
-              Adicionar Nova Ação
+              {t("common.buttons.add_new_action")}
             </Button>
           </div>
         </CardContent>
@@ -307,7 +326,11 @@ export const ActionsManager: React.FC<ActionsManagerProps> = ({
       <Modal
         isOpen={isActionModalOpen}
         onClose={closeActionModal}
-        title={editingAction ? "Editar Ação" : "Adicionar Nova Ação"}
+        title={
+          editingAction
+            ? t("actions.manager.modal.edit_title")
+            : t("actions.manager.modal.add_title")
+        }
         size="md"
       >
         <form
@@ -324,15 +347,20 @@ export const ActionsManager: React.FC<ActionsManagerProps> = ({
                 htmlFor="description"
                 className="block text-sm font-medium text-gray-700"
               >
-                Descrição da Ação
+                {t("actions.manager.form.description")}
               </label>
               <input
                 type="text"
                 id="description"
                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
                 {...register("description", {
-                  required: "Descrição é obrigatória",
-                  minLength: { value: 3, message: "Mínimo 3 caracteres" },
+                  required: t(
+                    "actions.manager.form.errors.description_required",
+                  ),
+                  minLength: {
+                    value: 3,
+                    message: t("actions.manager.form.errors.description_min"),
+                  },
                 })}
               />
               {errors.description && (
@@ -347,18 +375,19 @@ export const ActionsManager: React.FC<ActionsManagerProps> = ({
                 htmlFor="deadline"
                 className="block text-sm font-medium text-gray-700"
               >
-                Prazo
+                {t("actions.manager.form.deadline")}
               </label>
               <input
                 type="datetime-local"
                 id="deadline"
                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
                 {...register("deadline", {
-                  required: "Prazo é obrigatório",
+                  required: t("actions.manager.form.errors.deadline_required"),
                   validate: (value) => {
                     const selectedTimestamp = datetimeLocalToTimestamp(value);
                     return (
-                      selectedTimestamp > Date.now() || "Prazo deve ser futuro"
+                      selectedTimestamp > Date.now() ||
+                      t("actions.manager.form.errors.deadline_future")
                     );
                   },
                 })}
@@ -377,10 +406,12 @@ export const ActionsManager: React.FC<ActionsManagerProps> = ({
               variant="secondary"
               onClick={closeActionModal}
             >
-              Cancelar
+              {t("common.buttons.cancel")}
             </Button>
             <Button type="submit" variant="primary" isLoading={isSubmitting}>
-              {editingAction ? "Salvar Alterações" : "Adicionar Ação"}
+              {editingAction
+                ? t("common.buttons.save_changes")
+                : t("common.buttons.add_action")}
             </Button>
           </div>
         </form>
@@ -390,13 +421,15 @@ export const ActionsManager: React.FC<ActionsManagerProps> = ({
       <Card>
         <CardHeader>
           <h3 className="text-lg font-semibold">
-            Board de Ações ({optimisticActions.length})
+            {t("actions.manager.board.title", {
+              count: optimisticActions.length,
+            })}
           </h3>
         </CardHeader>
         <CardContent>
           {optimisticActions.length === 0 ? (
             <p className="text-gray-500 text-center py-4">
-              Nenhuma ação cadastrada para este plano.
+              {t("actions.manager.board.empty")}
             </p>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -410,7 +443,9 @@ export const ActionsManager: React.FC<ActionsManagerProps> = ({
                     onDrop={(e) => handleDrop(e, status)}
                   >
                     <div className="flex items-center justify-between mb-4">
-                      <h4 className="font-semibold text-lg">{status}</h4>
+                      <h4 className="font-semibold text-lg">
+                        {getStatusLabel(status)}
+                      </h4>
                       <span
                         className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusVariant(status)}`}
                       >
@@ -432,7 +467,7 @@ export const ActionsManager: React.FC<ActionsManagerProps> = ({
                               {action.description}
                             </p>
                             <p className="text-xs text-gray-600">
-                              Prazo:{" "}
+                              {t("actions.manager.board.deadline_prefix")}{" "}
                               {formatTimestampForDisplay(action.deadline)}
                             </p>
 
@@ -444,7 +479,7 @@ export const ActionsManager: React.FC<ActionsManagerProps> = ({
                                 onClick={() => openEditActionModal(action)}
                                 disabled={updatingActions[action.id]}
                               >
-                                Editar
+                                {t("common.buttons.edit")}
                               </Button>
                               <Button
                                 variant="danger"
@@ -452,7 +487,7 @@ export const ActionsManager: React.FC<ActionsManagerProps> = ({
                                 onClick={() => handleDeleteAction(action.id)}
                                 isLoading={updatingActions[action.id]}
                               >
-                                Excluir
+                                {t("common.buttons.delete")}
                               </Button>
                             </div>
                           </div>
@@ -469,8 +504,8 @@ export const ActionsManager: React.FC<ActionsManagerProps> = ({
                           }`}
                         >
                           {dragOverStatus === status
-                            ? "Solte aqui!"
-                            : "Arraste ações para aqui"}
+                            ? t("actions.manager.board.drop_here")
+                            : t("actions.manager.board.drag_here")}
                         </div>
                       )}
                     </div>

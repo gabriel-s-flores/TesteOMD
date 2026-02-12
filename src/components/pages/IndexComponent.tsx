@@ -1,5 +1,6 @@
 import { useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useAuth } from "../../context/AuthContext";
 import { useActionPlans } from "../../hooks/useActionPlans";
 import { useModal } from "../../hooks/useModal";
@@ -12,6 +13,7 @@ import { LoadingSpinner } from "../ui/LoadingSpinner";
 import { ToastContainer } from "../ui/ToastContainer";
 
 export function IndexComponent() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { user, logout } = useAuth();
   const {
@@ -45,10 +47,13 @@ export function IndexComponent() {
     try {
       await createPlan(data);
       createModal.close();
-      addToast({ type: "success", title: "Plano criado com sucesso!" });
+      addToast({ type: "success", title: t("dashboard.toasts.plan_created") });
     } catch (error) {
       console.error(error);
-      addToast({ type: "error", title: "Erro ao criar plano" });
+      addToast({
+        type: "error",
+        title: t("dashboard.toasts.plan_create_error"),
+      });
     }
   };
 
@@ -64,10 +69,13 @@ export function IndexComponent() {
       });
       editModal.close();
       setSelectedPlanId(null);
-      addToast({ type: "success", title: "Plano atualizado com sucesso!" });
+      addToast({ type: "success", title: t("dashboard.toasts.plan_updated") });
     } catch (error) {
       console.error(error);
-      addToast({ type: "error", title: "Erro ao atualizar plano" });
+      addToast({
+        type: "error",
+        title: t("dashboard.toasts.plan_update_error"),
+      });
     }
   };
 
@@ -79,10 +87,13 @@ export function IndexComponent() {
     setDeletingPlanId(planId);
     try {
       await deletePlan(planId);
-      addToast({ type: "success", title: "Plano excluído com sucesso!" });
+      addToast({ type: "success", title: t("dashboard.toasts.plan_deleted") });
     } catch (error) {
       console.error(error);
-      addToast({ type: "error", title: "Erro ao excluir plano" });
+      addToast({
+        type: "error",
+        title: t("dashboard.toasts.plan_delete_error"),
+      });
     } finally {
       setDeletingPlanId(null);
     }
@@ -123,10 +134,14 @@ export function IndexComponent() {
       <div className="container mx-auto px-4">
         <div className="flex flex-col gap-4 md:flex-row md:justify-between md:items-center mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Planos de Ação</h1>
+            <h1 className="text-3xl font-bold text-gray-900">
+              {t("dashboard.title")}
+            </h1>
             <p className="text-gray-600 mt-1">
-              Logado como <span className="font-medium">{user?.name}</span> (
-              {user?.email})
+              {t("dashboard.logged_as", {
+                name: user?.name ?? "",
+                email: user?.email ?? "",
+              })}
             </p>
           </div>
           <div className="flex gap-3">
@@ -135,10 +150,10 @@ export function IndexComponent() {
               onClick={handleLogout}
               isLoading={isLoggingOut}
             >
-              Sair
+              {t("common.buttons.logout")}
             </Button>
             <Button variant="primary" size="lg" onClick={createModal.open}>
-              Novo Plano
+              {t("common.buttons.new_plan")}
             </Button>
           </div>
         </div>

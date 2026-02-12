@@ -1,4 +1,5 @@
 import { Link } from "@tanstack/react-router"; // Add this import
+import { useTranslation } from "react-i18next";
 import type { ActionPlan } from "../../types";
 import { formatTimestampForDisplay } from "../../utils/dateUtils";
 import { Button } from "../ui/Button";
@@ -21,6 +22,8 @@ export const PlanCard = ({
   isDeleting,
   deletingPlanId,
 }: PlanCardProps) => {
+  const { t } = useTranslation();
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case "Não Iniciado":
@@ -36,6 +39,19 @@ export const PlanCard = ({
     return count > 0 ? "text-gray-800" : "text-gray-500";
   };
 
+  const getStatusLabel = (status: ActionPlan["status"]) => {
+    switch (status) {
+      case "Não Iniciado":
+        return t("plans.card.status.not_started");
+      case "Em Andamento":
+        return t("plans.card.status.in_progress");
+      case "Concluído":
+        return t("plans.card.status.done");
+      default:
+        return status;
+    }
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -48,7 +64,7 @@ export const PlanCard = ({
           </div>
           <div className="flex gap-2">
             <Button variant="primary" size="sm" onClick={() => onEdit(plan)}>
-              Editar
+              {t("common.buttons.edit")}
             </Button>
             {/* Replace the button with a Link */}
             <Link
@@ -56,7 +72,7 @@ export const PlanCard = ({
               params={{ id: plan.id }}
               className="inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-gray-700 bg-gray-100 hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
             >
-              Gerenciar Ações ({plan.actions.length})
+              {t("plans.card.manage_actions", { count: plan.actions.length })}
             </Link>
             <Button
               variant="danger"
@@ -64,7 +80,7 @@ export const PlanCard = ({
               onClick={() => onDelete(plan.id)}
               isLoading={isDeleting && deletingPlanId === plan.id}
             >
-              Excluir
+              {t("common.buttons.delete")}
             </Button>
           </div>
         </div>
@@ -72,11 +88,15 @@ export const PlanCard = ({
       <CardContent>
         <div className="flex justify-between items-center">
           <div className="flex gap-4 text-sm text-gray-600">
-            <span>Criado em: {formatTimestampForDisplay(plan.createdAt)}</span>
+            <span>
+              {t("plans.card.created_at", {
+                date: formatTimestampForDisplay(plan.createdAt),
+              })}
+            </span>
             <span
               className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(plan.status)}`}
             >
-              {plan.status}
+              {getStatusLabel(plan.status)}
             </span>
           </div>
           <div className="flex gap-2 text-sm">
@@ -85,23 +105,29 @@ export const PlanCard = ({
                 plan.actions.filter((a) => a.status === "A Fazer").length,
               )}`}
             >
-              A Fazer:{" "}
-              {plan.actions.filter((a) => a.status === "A Fazer").length}
+              {t("plans.card.counts.todo", {
+                count: plan.actions.filter((a) => a.status === "A Fazer")
+                  .length,
+              })}
             </span>
             <span
               className={`px-2 py-1 rounded-full ${getActionCountColor(
                 plan.actions.filter((a) => a.status === "Fazendo").length,
               )}`}
             >
-              Fazendo:{" "}
-              {plan.actions.filter((a) => a.status === "Fazendo").length}
+              {t("plans.card.counts.doing", {
+                count: plan.actions.filter((a) => a.status === "Fazendo")
+                  .length,
+              })}
             </span>
             <span
               className={`px-2 py-1 rounded-full ${getActionCountColor(
                 plan.actions.filter((a) => a.status === "Feita").length,
               )}`}
             >
-              Feita: {plan.actions.filter((a) => a.status === "Feita").length}
+              {t("plans.card.counts.done", {
+                count: plan.actions.filter((a) => a.status === "Feita").length,
+              })}
             </span>
           </div>
         </div>

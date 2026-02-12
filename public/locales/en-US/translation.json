@@ -1,220 +1,220 @@
 {
   "common": {
     "buttons": {
-      "cancel": "Cancelar",
-      "create": "Criar",
-      "update": "Atualizar",
-      "delete": "Excluir",
-      "edit": "Editar",
-      "save_changes": "Salvar Alterações",
-      "back": "Voltar",
-      "logout": "Sair",
-      "new_plan": "Novo Plano",
-      "generate_token": "Gerar token",
-      "reset_password": "Redefinir senha",
-      "add_new_action": "Adicionar Nova Ação",
-      "add_action": "Adicionar Ação",
-      "login": "Entrar",
-      "register": "Criar conta"
+      "cancel": "Cancel",
+      "create": "Create",
+      "update": "Update",
+      "delete": "Delete",
+      "edit": "Edit",
+      "save_changes": "Save Changes",
+      "back": "Back",
+      "logout": "Log out",
+      "new_plan": "New Plan",
+      "generate_token": "Generate token",
+      "reset_password": "Reset password",
+      "add_new_action": "Add New Action",
+      "add_action": "Add Action",
+      "login": "Log in",
+      "register": "Sign up"
     },
     "status": {
-      "loading": "Carregando...",
-      "loading_plans": "Carregando planos de ação..."
+      "loading": "Loading...",
+      "loading_plans": "Loading action plans..."
     },
     "labels": {
-      "email": "E-mail",
-      "password": "Senha",
-      "name": "Nome",
+      "email": "Email",
+      "password": "Password",
+      "name": "Name",
       "token": "Token"
     },
     "language": {
-      "label": "Idioma",
-      "portuguese": "Português",
+      "label": "Language",
+      "portuguese": "Portuguese",
       "english": "English"
     },
     "errors": {
-      "try_again_later": "Tente novamente mais tarde."
+      "try_again_later": "Please try again later."
     }
   },
   "modal": {
-    "close_aria_label": "Fechar modal"
+    "close_aria_label": "Close modal"
   },
   "auth": {
     "login": {
-      "title": "Entrar",
-      "subtitle": "Acesse sua conta para continuar",
-      "no_account": "Não tem conta?",
-      "create_account": "Criar conta",
-      "forgot_password": "Esqueci minha senha",
+      "title": "Log in",
+      "subtitle": "Access your account to continue",
+      "no_account": "Don't have an account?",
+      "create_account": "Sign up",
+      "forgot_password": "I forgot my password",
       "errors": {
-        "invalid_credentials": "Credenciais inválidas",
-        "email_required": "E-mail é obrigatório",
-        "email_invalid": "Formato de e-mail inválido",
-        "password_required": "Senha é obrigatória"
+        "invalid_credentials": "Invalid credentials",
+        "email_required": "Email is required",
+        "email_invalid": "Invalid email format",
+        "password_required": "Password is required"
       }
     },
     "register": {
-      "title": "Criar conta",
-      "subtitle": "Cadastre-se para acessar seus planos",
-      "confirm_password": "Confirmar senha",
-      "have_account": "Já possui conta?",
+      "title": "Sign up",
+      "subtitle": "Sign up to access your plans",
+      "confirm_password": "Confirm password",
+      "have_account": "Already have an account?",
       "errors": {
-        "generic": "Não foi possível registrar.",
-        "name_required": "Nome é obrigatório",
-        "name_min": "Mínimo 2 caracteres",
-        "email_required": "E-mail é obrigatório",
-        "email_invalid": "Formato de e-mail inválido",
-        "password_required": "Senha é obrigatória",
-        "password_weak": "Use 8+ caracteres com maiúscula, minúscula, número e símbolo",
-        "confirm_required": "Confirmação é obrigatória",
-        "password_mismatch": "As senhas não coincidem"
+        "generic": "Could not complete sign up.",
+        "name_required": "Name is required",
+        "name_min": "Minimum 2 characters",
+        "email_required": "Email is required",
+        "email_invalid": "Invalid email format",
+        "password_required": "Password is required",
+        "password_weak": "Use 8+ characters with uppercase, lowercase, number, and symbol",
+        "confirm_required": "Confirmation is required",
+        "password_mismatch": "Passwords do not match"
       }
     },
     "forgot_password": {
-      "title": "Recuperar senha",
-      "subtitle": "Informe seu e-mail para gerar um token",
-      "has_token": "Já tem token? Redefinir senha",
-      "back_to_login": "Voltar ao login",
-      "success": "Se o e-mail existir, um token de recuperação foi gerado com sucesso.",
-      "token_simulation": "Token (simulação):",
+      "title": "Recover password",
+      "subtitle": "Enter your email to generate a token",
+      "has_token": "Already have a token? Reset password",
+      "back_to_login": "Back to login",
+      "success": "If the email exists, a recovery token has been successfully generated.",
+      "token_simulation": "Token (simulation):",
       "errors": {
-        "generic": "Não foi possível enviar token.",
-        "email_required": "E-mail é obrigatório",
-        "email_invalid": "Formato de e-mail inválido"
+        "generic": "Could not send token.",
+        "email_required": "Email is required",
+        "email_invalid": "Invalid email format"
       }
     },
     "reset_password": {
-      "title": "Redefinir senha",
-      "subtitle": "Informe e-mail, token e nova senha",
-      "new_password": "Nova senha",
-      "confirm_new_password": "Confirmar nova senha",
-      "new_token": "Gerar novo token",
-      "back_to_login": "Voltar ao login",
-      "success": "Senha redefinida com sucesso. Você já pode fazer login.",
+      "title": "Reset password",
+      "subtitle": "Enter email, token, and new password",
+      "new_password": "New password",
+      "confirm_new_password": "Confirm new password",
+      "new_token": "Generate new token",
+      "back_to_login": "Back to login",
+      "success": "Password reset successfully. You can now log in.",
       "errors": {
-        "generic": "Não foi possível redefinir senha.",
-        "email_required": "E-mail é obrigatório",
-        "email_invalid": "Formato de e-mail inválido",
-        "token_required": "Token é obrigatório",
-        "token_invalid": "Token inválido",
-        "new_password_required": "Nova senha é obrigatória",
-        "password_weak": "Use 8+ caracteres com maiúscula, minúscula, número e símbolo",
-        "confirm_required": "Confirmação é obrigatória",
-        "password_mismatch": "As senhas não coincidem"
+        "generic": "Could not reset password.",
+        "email_required": "Email is required",
+        "email_invalid": "Invalid email format",
+        "token_required": "Token is required",
+        "token_invalid": "Invalid token",
+        "new_password_required": "New password is required",
+        "password_weak": "Use 8+ characters with uppercase, lowercase, number, and symbol",
+        "confirm_required": "Confirmation is required",
+        "password_mismatch": "Passwords do not match"
       }
     },
     "services": {
-      "name_min": "Nome deve ter ao menos 2 caracteres.",
-      "email_invalid": "Informe um e-mail válido.",
-      "weak_password": "Senha fraca. Use ao menos 8 caracteres com maiúscula, minúscula, número e símbolo.",
-      "email_exists": "E-mail já cadastrado.",
-      "invalid_credentials": "Credenciais inválidas",
-      "token_invalid_or_expired": "Token inválido ou expirado.",
-      "invalid_session": "Sessão inválida. Faça login novamente."
+      "name_min": "Name must have at least 2 characters.",
+      "email_invalid": "Enter a valid email.",
+      "weak_password": "Weak password. Use at least 8 characters with uppercase, lowercase, number, and symbol.",
+      "email_exists": "Email is already registered.",
+      "invalid_credentials": "Invalid credentials",
+      "token_invalid_or_expired": "Invalid or expired token.",
+      "invalid_session": "Invalid session. Please log in again."
     }
   },
   "dashboard": {
-    "title": "Planos de Ação",
-    "logged_as": "Logado como {{name}} ({{email}})",
+    "title": "Action Plans",
+    "logged_as": "Logged in as {{name}} ({{email}})",
     "toasts": {
-      "plan_created": "Plano criado com sucesso!",
-      "plan_create_error": "Erro ao criar plano",
-      "plan_updated": "Plano atualizado com sucesso!",
-      "plan_update_error": "Erro ao atualizar plano",
-      "plan_deleted": "Plano excluído com sucesso!",
-      "plan_delete_error": "Erro ao excluir plano"
+      "plan_created": "Plan created successfully!",
+      "plan_create_error": "Error creating plan",
+      "plan_updated": "Plan updated successfully!",
+      "plan_update_error": "Error updating plan",
+      "plan_deleted": "Plan deleted successfully!",
+      "plan_delete_error": "Error deleting plan"
     }
   },
   "plans": {
     "list": {
-      "empty": "Nenhum plano de ação encontrado. Crie seu primeiro plano!"
+      "empty": "No action plans found. Create your first plan!"
     },
     "modal": {
-      "create_title": "Criar Plano de Ação",
-      "edit_title": "Editar Plano de Ação"
+      "create_title": "Create Action Plan",
+      "edit_title": "Edit Action Plan"
     },
     "form": {
-      "title": "Título",
-      "objective": "Objetivo",
-      "submit_create": "Criar Plano",
-      "submit_update": "Atualizar Plano",
+      "title": "Title",
+      "objective": "Objective",
+      "submit_create": "Create Plan",
+      "submit_update": "Update Plan",
       "errors": {
-        "title_required": "Título é obrigatório",
-        "title_min": "Mínimo 3 caracteres",
-        "objective_required": "Objetivo é obrigatório",
-        "objective_min": "Mínimo 10 caracteres"
+        "title_required": "Title is required",
+        "title_min": "Minimum 3 characters",
+        "objective_required": "Objective is required",
+        "objective_min": "Minimum 10 characters"
       }
     },
     "card": {
-      "manage_actions": "Gerenciar Ações ({{count}})",
-      "created_at": "Criado em: {{date}}",
+      "manage_actions": "Manage Actions ({{count}})",
+      "created_at": "Created on: {{date}}",
       "status": {
-        "not_started": "Não Iniciado",
-        "in_progress": "Em Andamento",
-        "done": "Concluído"
+        "not_started": "Not Started",
+        "in_progress": "In Progress",
+        "done": "Completed"
       },
       "counts": {
-        "todo": "A Fazer: {{count}}",
-        "doing": "Fazendo: {{count}}",
-        "done": "Feita: {{count}}"
+        "todo": "To Do: {{count}}",
+        "doing": "Doing: {{count}}",
+        "done": "Done: {{count}}"
       }
     }
   },
   "actions": {
     "page": {
       "not_found": "Plan not found",
-      "title": "Gerenciar Ações",
-      "back_to_plans": "Voltar para Planos"
+      "title": "Manage Actions",
+      "back_to_plans": "Back to Plans"
     },
     "manager": {
-      "title": "Ações do Plano",
-      "total": "Total de {{count}} ações",
+      "title": "Plan Actions",
+      "total": "Total of {{count}} actions",
       "modal": {
-        "add_title": "Adicionar Nova Ação",
-        "edit_title": "Editar Ação"
+        "add_title": "Add New Action",
+        "edit_title": "Edit Action"
       },
       "form": {
-        "description": "Descrição da Ação",
-        "deadline": "Prazo",
+        "description": "Action Description",
+        "deadline": "Deadline",
         "errors": {
-          "description_required": "Descrição é obrigatória",
-          "description_min": "Mínimo 3 caracteres",
-          "deadline_required": "Prazo é obrigatório",
-          "deadline_future": "Prazo deve ser futuro"
+          "description_required": "Description is required",
+          "description_min": "Minimum 3 characters",
+          "deadline_required": "Deadline is required",
+          "deadline_future": "Deadline must be in the future"
         }
       },
       "board": {
-        "title": "Board de Ações ({{count}})",
-        "empty": "Nenhuma ação cadastrada para este plano.",
-        "deadline_prefix": "Prazo:",
-        "drop_here": "Solte aqui!",
-        "drag_here": "Arraste ações para aqui"
+        "title": "Action Board ({{count}})",
+        "empty": "No actions registered for this plan.",
+        "deadline_prefix": "Deadline:",
+        "drop_here": "Drop here!",
+        "drag_here": "Drag actions here"
       },
-      "confirm_delete": "Tem certeza que deseja excluir esta ação?",
+      "confirm_delete": "Are you sure you want to delete this action?",
       "errors": {
-        "add": "Erro ao adicionar ação:",
-        "edit": "Erro ao editar ação:",
-        "status": "Erro ao atualizar status:",
-        "delete": "Erro ao excluir ação:"
+        "add": "Error adding action:",
+        "edit": "Error editing action:",
+        "status": "Error updating status:",
+        "delete": "Error deleting action:"
       },
       "status": {
-        "todo": "A Fazer",
-        "doing": "Fazendo",
-        "done": "Feita"
+        "todo": "To Do",
+        "doing": "Doing",
+        "done": "Done"
       }
     },
     "toasts": {
-      "action_added": "Ação adicionada com sucesso!",
-      "action_add_error": "Erro ao adicionar ação",
-      "action_updated": "Ação atualizada com sucesso!",
-      "action_update_error": "Erro ao atualizar ação"
+      "action_added": "Action added successfully!",
+      "action_add_error": "Error adding action",
+      "action_updated": "Action updated successfully!",
+      "action_update_error": "Error updating action"
     }
   },
   "services": {
-    "plan_not_found": "Plano não encontrado",
-    "action_not_found": "Ação não encontrada"
+    "plan_not_found": "Plan not found",
+    "action_not_found": "Action not found"
   },
   "errors": {
-    "use_auth_inside_provider": "useAuth deve ser usado dentro de AuthProvider."
+    "use_auth_inside_provider": "useAuth must be used within AuthProvider."
   }
 }

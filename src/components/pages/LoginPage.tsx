@@ -51,6 +51,7 @@ export const LoginPage = () => {
               <input
                 id="email"
                 type="email"
+                autoComplete="username"
                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
                 {...register("email", {
                   required: "E-mail é obrigatório",
@@ -75,6 +76,7 @@ export const LoginPage = () => {
               <input
                 id="password"
                 type="password"
+                autoComplete="current-password"
                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
                 {...register("password", {
                   required: "Senha é obrigatória",

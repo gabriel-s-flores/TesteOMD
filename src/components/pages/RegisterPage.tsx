@@ -66,6 +66,7 @@ export const RegisterPage = () => {
               <input
                 id="name"
                 type="text"
+                autoComplete="name"
                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
                 {...register("name", {
                   required: "Nome é obrigatório",
@@ -89,6 +90,7 @@ export const RegisterPage = () => {
               <input
                 id="email"
                 type="email"
+                autoComplete="email"
                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
                 {...register("email", {
                   required: "E-mail é obrigatório",
@@ -113,6 +115,7 @@ export const RegisterPage = () => {
               <input
                 id="password"
                 type="password"
+                autoComplete="new-password"
                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
                 {...register("password", {
                   required: "Senha é obrigatória",
@@ -138,6 +141,7 @@ export const RegisterPage = () => {
               <input
                 id="confirmPassword"
                 type="password"
+                autoComplete="new-password"
                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
                 {...register("confirmPassword", {
                   required: "Confirmação é obrigatória",

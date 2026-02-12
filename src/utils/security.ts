@@ -1,3 +1,5 @@
+import type { JwtPayload } from "../types";
+
 const textEncoder = new TextEncoder();
 
 const toBase64Url = (value: string) => {
@@ -35,7 +37,7 @@ export const hashPassword = async (password: string, salt: string) => {
   return hashValue(`${salt}:${password}`);
 };
 
-export const generateFakeJwt = (payload: Record<string, unknown>) => {
+export const generateFakeJwt = (payload: JwtPayload) => {
   const header = { alg: "HS256", typ: "JWT" };
   const encodedHeader = toBase64Url(JSON.stringify(header));
   const encodedPayload = toBase64Url(JSON.stringify(payload));

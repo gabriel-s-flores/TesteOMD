@@ -29,3 +29,19 @@ export interface Session {
   userId: string;
   expiresAt: number;
 }
+
+export type JsonPrimitive = string | number | boolean | null;
+
+export type JsonValue = JsonPrimitive | JsonObject | JsonArray;
+
+export interface JsonObject {
+  [key: string]: JsonValue;
+}
+
+export type JsonArray = JsonValue[];
+
+export type JwtPayload = Record<string, JsonValue> & {
+  sub?: string;
+  exp?: number;
+  iat?: number;
+};
